@@ -8,6 +8,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import allure
 import logging
+import os
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -189,6 +191,39 @@ class BasePage:
             allure.attach(screenshot, name=name, attachment_type=allure.attachment_type.PNG)
         except Exception as e:
             logger.error(f"Erreur lors de la capture d'écran: {e}")
+
+    def capture_screenshot(self, name=None):
+        """
+        Capture une screenshot et la sauvegarde dans le dossier reports/screenshots
+
+        Args:
+            name: Nom du fichier (optionnel, généré automatiquement si non fourni)
+
+        Returns:
+            Chemin du fichier screenshot
+        """
+        if not name:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            name = f"screenshot_{timestamp}"
+
+        screenshot_dir = "reports/screenshots"
+        os.makedirs(screenshot_dir, exist_ok=True)
+
+        if not name.endswith('.png'):
+            name = f"{name}.png"
+
+        screenshot_path = os.path.join(screenshot_dir, name)
+
+        try:
+            self.driver.save_screenshot(screenshot_path)
+            logger.info(f"Screenshot sauvegardée: {screenshot_path}")
+            with open(screenshot_path, 'rb') as f:
+                screenshot_content = f.read()
+            allure.attach(screenshot_content, name=name, attachment_type=allure.attachment_type.PNG)
+            return screenshot_path
+        except Exception as e:
+            logger.error(f"Erreur lors de la capture d'écran: {e}")
+            return None
 
     def wait_for_page_load(self, timeout=None):
         """

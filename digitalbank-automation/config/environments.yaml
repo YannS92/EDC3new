@@ -4,9 +4,11 @@ default_environment: dev
 
 environments:
   dev:
-    name: "Développement"
-    base_url: "https://dev.digitalbank.local"
-    api_url: "https://api-dev.digitalbank.local"
+    name: "Développement (local)"
+    # Live Server (VSCode) — URL réelle sur ton poste
+    base_url: "http://127.0.0.1:5500/Projet_Etude_de_Cas_3/digitalbank/"
+    # Pas d'API réelle en local (appli simulée). Laisse vide ou commente si ton code le permet.
+    api_url: ""
     database:
       host: "localhost"
       port: 5432
