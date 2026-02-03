@@ -6,6 +6,7 @@ Ce fichier contient les fixtures et hooks globaux pour les tests
 import os
 import pytest
 import yaml
+import allure
 from datetime import datetime
 from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
@@ -205,3 +206,77 @@ def pytest_collection_modifyitems(config, items):
     # Ajouter des informations sur l'environnement aux tests
     for item in items:
         item.user_properties.append(("environment", env))
+
+
+# ═══════════════════════════════════════════════════════════════
+# HOOKS BDD POUR ALLURE
+# ═══════════════════════════════════════════════════════════════
+
+def pytest_bdd_before_scenario(request, feature, scenario):
+    """
+    Hook exécuté avant chaque scénario BDD
+    Configure les métadonnées Allure à partir des tags
+    """
+    # Mapping des tags vers Allure epic/feature
+    allure.dynamic.epic("DigitalBank")
+    allure.dynamic.feature(feature.name)
+    allure.dynamic.story(scenario.name)
+
+    # Mapping des tags vers Allure severity
+    severity_mapping = {
+        'critical': allure.severity_level.CRITICAL,
+        'blocker': allure.severity_level.BLOCKER,
+        'normal': allure.severity_level.NORMAL,
+        'minor': allure.severity_level.MINOR,
+        'trivial': allure.severity_level.TRIVIAL,
+    }
+
+    for tag in scenario.tags:
+        tag_lower = tag.lower()
+        if tag_lower in severity_mapping:
+            allure.dynamic.severity(severity_mapping[tag_lower])
+
+
+def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
+    """
+    Hook exécuté lors d'une erreur dans un step BDD
+    Capture une screenshot et l'attache au rapport Allure
+    """
+    # Récupérer le driver depuis les fixtures si disponible
+    driver = None
+    for fixture_name in ['web_driver', 'driver']:
+        if fixture_name in request.fixturenames:
+            try:
+                driver = request.getfixturevalue(fixture_name)
+                break
+            except Exception:
+                continue
+
+    if driver:
+        try:
+            screenshot = driver.get_screenshot_as_png()
+            allure.attach(
+                screenshot,
+                name=f"Erreur - {step.name}",
+                attachment_type=allure.attachment_type.PNG
+            )
+        except Exception:
+            pass
+
+    # Attacher les détails de l'erreur
+    allure.attach(
+        f"Feature: {feature.name}\n"
+        f"Scenario: {scenario.name}\n"
+        f"Step: {step.keyword} {step.name}\n"
+        f"Error: {str(exception)}",
+        name="Détails de l'erreur",
+        attachment_type=allure.attachment_type.TEXT
+    )
+
+
+def pytest_bdd_after_scenario(request, feature, scenario):
+    """
+    Hook exécuté après chaque scénario BDD
+    Peut être utilisé pour le nettoyage ou la capture de screenshots
+    """
+    pass
