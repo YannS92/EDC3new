@@ -1,0 +1,271 @@
+name: DigitalBank - Tests Automatisés
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Exécution quotidienne à 6h00 UTC (8h00 Paris)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Suite de tests à exécuter'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - regression
+          - functional
+          - api
+          - performance
+          - accessibility
+      environment:
+        description: 'Environnement cible'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - int
+          - uat
+          - preprod
+
+env:
+  PYTHON_VERSION: '3.11'
+  ALLURE_VERSION: '2.24.0'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 1: Tests Smoke (rapides, bloquants)
+  # ═══════════════════════════════════════════════════════════════
+  smoke-tests:
+    name: Tests Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Installation Chrome et ChromeDriver
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Exécution des tests Smoke
+        run: |
+          pytest tests/ -m smoke \
+            --env=${{ github.event.inputs.environment || 'dev' }} \
+            --headless \
+            --alluredir=reports/allure-results \
+            --html=reports/smoke-report.html \
+            --self-contained-html \
+            -v --tb=short
+        continue-on-error: false
+
+      - name: Upload des résultats Allure
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-allure-results
+          path: reports/allure-results
+          retention-days: 30
+
+      - name: Upload du rapport HTML
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-html-report
+          path: reports/smoke-report.html
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 2: Tests de Régression (parallélisés)
+  # ═══════════════════════════════════════════════════════════════
+  regression-tests:
+    name: Tests Régression
+    needs: smoke-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        test-group: [authentication, account, transfer, payment, security]
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Installation Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Exécution des tests - ${{ matrix.test-group }}
+        run: |
+          pytest tests/functional/test_${{ matrix.test-group }}.py \
+            --env=${{ github.event.inputs.environment || 'dev' }} \
+            --headless \
+            --alluredir=reports/allure-results-${{ matrix.test-group }} \
+            -v --tb=short
+        continue-on-error: true
+
+      - name: Upload des résultats
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-results-${{ matrix.test-group }}
+          path: reports/allure-results-${{ matrix.test-group }}
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 3: Tests d'Accessibilité (WCAG 2.1)
+  # ═══════════════════════════════════════════════════════════════
+  accessibility-tests:
+    name: Tests Accessibilité WCAG
+    needs: smoke-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Installation Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Exécution des tests Accessibilité
+        run: |
+          pytest tests/ -m accessibility \
+            --env=${{ github.event.inputs.environment || 'dev' }} \
+            --headless \
+            --alluredir=reports/allure-results-a11y \
+            --html=reports/accessibility-report.html \
+            --self-contained-html \
+            -v
+        continue-on-error: true
+
+      - name: Upload des résultats
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-results
+          path: |
+            reports/allure-results-a11y
+            reports/accessibility-report.html
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 4: Génération du rapport Allure consolidé
+  # ═══════════════════════════════════════════════════════════════
+  generate-report:
+    name: Génération Rapport Allure
+    needs: [smoke-tests, regression-tests, accessibility-tests]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Téléchargement de tous les résultats
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results
+
+      - name: Consolidation des résultats
+        run: |
+          mkdir -p reports/allure-results-merged
+          find all-results -name "*.json" -exec cp {} reports/allure-results-merged/ \;
+          find all-results -name "*.txt" -exec cp {} reports/allure-results-merged/ \;
+
+      - name: Installation Allure
+        run: |
+          curl -o allure.tgz -Ls https://github.com/allure-framework/allure2/releases/download/${{ env.ALLURE_VERSION }}/allure-${{ env.ALLURE_VERSION }}.tgz
+          tar -zxvf allure.tgz
+          sudo mv allure-${{ env.ALLURE_VERSION }} /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
+      - name: Génération du rapport Allure
+        run: |
+          allure generate reports/allure-results-merged -o reports/allure-report --clean
+
+      - name: Upload du rapport Allure final
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-final
+          path: reports/allure-report
+          retention-days: 90
+
+      - name: Déploiement sur GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports/allure-report
+          destination_dir: allure-report
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 5: Notification des résultats
+  # ═══════════════════════════════════════════════════════════════
+  notify:
+    name: Notification
+    needs: [smoke-tests, regression-tests, accessibility-tests, generate-report]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Résumé des tests
+        run: |
+          echo "## Résumé de l'exécution" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Statut |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests Smoke | ${{ needs.smoke-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests Régression | ${{ needs.regression-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests Accessibilité | ${{ needs.accessibility-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 [Voir le rapport Allure](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notification Slack (optionnel)
+        if: failure() && vars.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,89 @@
+# Configuration des tests - DigitalBank
+
+test_suites:
+  smoke:
+    description: "Tests de vérification rapide"
+    tags: ["smoke"]
+    max_duration: 300  # 5 minutes
+    parallel: false
+
+  regression:
+    description: "Suite complète de régression"
+    tags: ["regression"]
+    max_duration: 1800  # 30 minutes
+    parallel: true
+    workers: 4
+
+  functional:
+    description: "Tests fonctionnels par module"
+    tags: ["functional"]
+    max_duration: 900  # 15 minutes
+    parallel: true
+    workers: 2
+
+  api:
+    description: "Tests des endpoints API"
+    tags: ["api"]
+    max_duration: 600  # 10 minutes
+    parallel: true
+    workers: 4
+
+  performance:
+    description: "Tests de performance"
+    tags: ["performance"]
+    max_duration: 3600  # 1 heure
+    parallel: false
+
+  accessibility:
+    description: "Tests d'accessibilité WCAG"
+    tags: ["accessibility", "wcag"]
+    max_duration: 600  # 10 minutes
+    parallel: false
+
+# Configuration des rapports
+reporting:
+  allure:
+    enabled: true
+    results_dir: "reports/allure-results"
+    report_dir: "reports/allure-report"
+
+  html:
+    enabled: true
+    output_file: "reports/report.html"
+
+  screenshots:
+    on_failure: true
+    on_success: false
+    directory: "reports/screenshots"
+
+# Retry configuration
+retry:
+  max_attempts: 2
+  delay_seconds: 5
+  retry_on_failure: true
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/test_execution.log"
+
+# Timeouts (en secondes)
+timeouts:
+  page_load: 30
+  element_wait: 15
+  api_response: 10
+  animation: 2
+
+# Critères de performance (RGPD: temps réponse < 2 secondes)
+performance_thresholds:
+  page_load_time: 2000  # ms
+  api_response_time: 1000  # ms
+  transaction_time: 3000  # ms
+
+# Tags de priorité
+priority_tags:
+  critical: ["login", "balance", "transfer"]
+  high: ["payment", "security", "2fa"]
+  medium: ["notifications", "history"]
+  low: ["settings", "preferences"]

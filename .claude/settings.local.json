@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Copy-Item ''C:\\\\Users\\\\Yann\\\\OneDrive\\\\Documents\\\\EDC3\\\\Étude de Cas 3_ Automatisation des Tests \\(1\\).docx'' ''C:\\\\Users\\\\Yann\\\\OneDrive\\\\Documents\\\\EDC3\\\\temp.zip''; Expand-Archive -Path ''C:\\\\Users\\\\Yann\\\\OneDrive\\\\Documents\\\\EDC3\\\\temp.zip'' -DestinationPath ''C:\\\\Users\\\\Yann\\\\OneDrive\\\\Documents\\\\EDC3\\\\temp_docx'' -Force\")",
+      "Bash(powershell:*)"
+    ]
+  }
+}

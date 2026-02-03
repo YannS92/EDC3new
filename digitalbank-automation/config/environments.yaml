@@ -1,0 +1,93 @@
+# Configuration des environnements de test - DigitalBank
+
+default_environment: dev
+
+environments:
+  dev:
+    name: "Développement"
+    base_url: "https://dev.digitalbank.local"
+    api_url: "https://api-dev.digitalbank.local"
+    database:
+      host: "localhost"
+      port: 5432
+      name: "digitalbank_dev"
+      user: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+    appium:
+      platform: "Android"
+      device_name: "emulator-5554"
+      app_path: "/apps/digitalbank-dev.apk"
+    timeout: 30
+    implicit_wait: 10
+
+  int:
+    name: "Intégration"
+    base_url: "https://int.digitalbank.local"
+    api_url: "https://api-int.digitalbank.local"
+    database:
+      host: "db-int.digitalbank.local"
+      port: 5432
+      name: "digitalbank_int"
+      user: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+    appium:
+      platform: "Android"
+      device_name: "Pixel_6_API_33"
+      app_path: "/apps/digitalbank-int.apk"
+    timeout: 45
+    implicit_wait: 15
+
+  uat:
+    name: "Recette"
+    base_url: "https://uat.digitalbank.local"
+    api_url: "https://api-uat.digitalbank.local"
+    database:
+      host: "db-uat.digitalbank.local"
+      port: 5432
+      name: "digitalbank_uat"
+      user: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+    appium:
+      platform: "Android"
+      device_name: "Samsung_Galaxy_S23"
+      app_path: "/apps/digitalbank-uat.apk"
+    timeout: 60
+    implicit_wait: 20
+
+  preprod:
+    name: "Pré-production"
+    base_url: "https://preprod.digitalbank.com"
+    api_url: "https://api-preprod.digitalbank.com"
+    database:
+      host: "db-preprod.digitalbank.com"
+      port: 5432
+      name: "digitalbank_preprod"
+      user: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+    appium:
+      platform: "Android"
+      device_name: "Real_Device"
+      app_path: "/apps/digitalbank-preprod.apk"
+    timeout: 60
+    implicit_wait: 20
+
+# Configuration Appium Server
+appium_server:
+  host: "localhost"
+  port: 4723
+
+# Capabilities communes
+capabilities:
+  android:
+    platformName: "Android"
+    automationName: "UiAutomator2"
+    noReset: false
+    fullReset: false
+    newCommandTimeout: 300
+
+  ios:
+    platformName: "iOS"
+    automationName: "XCUITest"
+    noReset: false
+    fullReset: false
+    newCommandTimeout: 300

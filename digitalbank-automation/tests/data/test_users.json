@@ -1,0 +1,74 @@
+{
+  "users": {
+    "standard": {
+      "email": "test@digitalbank.fr",
+      "password": "Test1234!",
+      "name": "Utilisateur Test",
+      "has_2fa": false
+    },
+    "with_2fa": {
+      "email": "marie.martin@email.com",
+      "password": "SecurePass456!",
+      "name": "Marie Martin",
+      "has_2fa": true,
+      "totp_code": "123456"
+    },
+    "additional": {
+      "email": "jean.dupont@email.com",
+      "password": "Password123!",
+      "name": "Jean Dupont",
+      "has_2fa": false
+    }
+  },
+  "invalid_credentials": {
+    "wrong_email": "invalid@test.com",
+    "wrong_password": "WrongPassword123!"
+  },
+  "accounts": {
+    "compte_courant": {
+      "type": "Compte Courant",
+      "number": "FR76 0000 1111 2222 3333 4444 555"
+    },
+    "livret_a": {
+      "type": "Livret A",
+      "number": "FR76 0000 1111 2222 3333 4444 666"
+    }
+  },
+  "beneficiaries": {
+    "marc_bernard": {
+      "name": "Marc Bernard",
+      "iban": "FR76 7777 8888 9999 0000 1111 222"
+    },
+    "julie_petit": {
+      "name": "Julie Petit",
+      "iban": "FR76 3333 4444 5555 6666 7777 888"
+    }
+  },
+  "bills": {
+    "edf": {
+      "provider": "EDF",
+      "reference": "EDF-2025-001234",
+      "amount": 156.78
+    },
+    "orange": {
+      "provider": "Orange",
+      "reference": "ORG-2025-567890",
+      "amount": 49.99
+    }
+  },
+  "password_requirements": {
+    "min_length": 8,
+    "requires_uppercase": true,
+    "requires_lowercase": true,
+    "requires_number": true,
+    "requires_special": true,
+    "valid_new_password": "NewSecure123!",
+    "invalid_passwords": {
+      "too_short": "Abc1!",
+      "no_uppercase": "password123!",
+      "no_lowercase": "PASSWORD123!",
+      "no_number": "Password!",
+      "no_special": "Password123"
+    }
+  }
+}
