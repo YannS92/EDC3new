@@ -2,20 +2,12 @@
 Tests fonctionnels pour les paramètres de sécurité DigitalBank
 """
 
+import json
 import pytest
 import allure
-import json
-import os
 from tests.utils.pages.login_page import LoginPage
 from tests.utils.pages.dashboard_page import DashboardPage
 from tests.utils.pages.security_page import SecurityPage
-
-
-def load_test_data():
-    """Charge les données de test depuis le fichier JSON"""
-    data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'test_users.json')
-    with open(data_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
 
 @allure.epic("DigitalBank")
@@ -24,13 +16,13 @@ class TestSecuritySettings:
     """Suite de tests pour les paramètres de sécurité"""
 
     @pytest.fixture(autouse=True)
-    def setup(self, web_driver):
+    def setup(self, web_driver, test_data):
         """Configuration avant chaque test"""
         self.driver = web_driver
         self.login_page = LoginPage(web_driver)
         self.dashboard = DashboardPage(web_driver)
         self.security_page = SecurityPage(web_driver)
-        self.test_data = load_test_data()
+        self.test_data = test_data
 
         # Connexion préalable
         self._login_and_navigate_to_security()
