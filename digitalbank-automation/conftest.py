@@ -15,6 +15,19 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement
 load_dotenv()
 
+# Import des modules de données de test
+from tests.data import (
+    load_test_data,
+    get_db,
+    DatabaseManager,
+    UserFactory,
+    AccountFactory,
+    TransactionFactory,
+    BeneficiaryFactory,
+    BillFactory,
+    TestDataManager,
+)
+
 
 def load_config(config_file):
     """Charge un fichier de configuration YAML"""
@@ -158,6 +171,78 @@ def test_data_generator():
     return fake
 
 
+# ═══════════════════════════════════════════════════════════════
+# FIXTURES DONNÉES DE TEST
+# ═══════════════════════════════════════════════════════════════
+
+@pytest.fixture(scope="function")
+def test_data():
+    """
+    Fixture pour les données de test statiques (JSON)
+
+    Returns:
+        Dictionnaire contenant toutes les données de test
+    """
+    return load_test_data()
+
+
+@pytest.fixture(scope="session")
+def test_database(request):
+    """
+    Fixture pour la base de données de test avec seeding
+
+    Initialise la base de données avec les données de référence
+    au début de la session de tests.
+    """
+    env = request.config.getoption("--env", default="dev")
+    manager = TestDataManager(env)
+    manager.seed_standard_data()
+    yield manager.db
+    # Cleanup optionnel à la fin de session
+    # manager.cleanup()
+
+
+@pytest.fixture(scope="function")
+def data_factory():
+    """
+    Fixture pour la génération dynamique de données
+
+    Returns:
+        Dictionnaire des factories disponibles
+    """
+    return {
+        'user': UserFactory,
+        'account': AccountFactory,
+        'transaction': TransactionFactory,
+        'beneficiary': BeneficiaryFactory,
+        'bill': BillFactory,
+    }
+
+
+@pytest.fixture
+def standard_user(test_data):
+    """Fixture pour l'utilisateur standard"""
+    return test_data['users']['standard']
+
+
+@pytest.fixture
+def user_with_2fa(test_data):
+    """Fixture pour l'utilisateur avec 2FA"""
+    return test_data['users']['with_2fa']
+
+
+@pytest.fixture
+def invalid_credentials(test_data):
+    """Fixture pour les identifiants invalides"""
+    return test_data['invalid_credentials']
+
+
+@pytest.fixture
+def password_requirements(test_data):
+    """Fixture pour les exigences de mot de passe"""
+    return test_data['password_requirements']
+
+
 @pytest.fixture(scope="function")
 def screenshot_on_failure(request, mobile_driver):
     """Capture une screenshot en cas d'échec du test"""
@@ -280,3 +365,11 @@ def pytest_bdd_after_scenario(request, feature, scenario):
     Peut être utilisé pour le nettoyage ou la capture de screenshots
     """
     pass
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """
+    Hook exécuté à la fin de la session de tests
+    Ferme toutes les connexions à la base de données
+    """
+    DatabaseManager.close_all()
