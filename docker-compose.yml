@@ -1,0 +1,50 @@
+# Docker Compose - DigitalBank
+# 2 conteneurs : Frontend (nginx) + Tests (Python/Chrome)
+
+version: '3.8'
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # FRONTEND - Application DigitalBank
+  # ═══════════════════════════════════════════════════════════════
+  webapp:
+    image: nginx:alpine
+    container_name: digitalbank-app
+    volumes:
+      - ./digitalbank:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - digitalbank-net
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Python + Chrome Headless
+  # ═══════════════════════════════════════════════════════════════
+  tests:
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests
+    depends_on:
+      webapp:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://webapp/
+      - PYTHONPATH=/app
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    # Tests smoke par défaut
+    command: ["tests/", "-v", "--headless", "-m", "smoke", "--alluredir=reports/allure-results"]
+
+networks:
+  digitalbank-net:
+    driver: bridge

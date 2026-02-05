@@ -3,10 +3,20 @@
 default_environment: dev
 
 environments:
+  # ═══════════════════════════════════════════════════════════════
+  # ENVIRONNEMENT DOCKER (pour docker-compose)
+  # ═══════════════════════════════════════════════════════════════
+  docker:
+    name: "Docker (containerisé)"
+    base_url: "http://webapp/"
+    api_url: ""
+    timeout: 60
+    implicit_wait: 15
+
   dev:
     name: "Développement (local)"
-    # Live Server (VSCode) — URL réelle sur ton poste
-    base_url: "http://127.0.0.1:5500/Projet_Etude_de_Cas_3/digitalbank/"
+    # Live Server (VSCode) ou serveur local
+    base_url: "http://127.0.0.1:5500/digitalbank/"
     # Pas d'API réelle en local (appli simulée). Laisse vide ou commente si ton code le permet.
     api_url: ""
     database:
