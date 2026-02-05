@@ -41,11 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Dépendances Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Code source
 COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Répertoires
 RUN mkdir -p reports/allure-results reports/screenshots logs tests/data/db
