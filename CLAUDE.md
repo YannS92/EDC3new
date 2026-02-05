@@ -6,6 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a test automation framework for the DigitalBank mobile banking application. The project uses Python with pytest, Selenium/Appium, and follows the Page Object Model pattern.
 
+## Project Structure
+
+```
+EDC3/
+├── digitalbank/              # Application web sous test (HTML)
+├── digitalbank-automation/   # Framework de tests automatisés
+│   ├── tests/
+│   │   ├── functional/       # Tests fonctionnels traditionnels
+│   │   ├── bdd/              # Tests BDD (Gherkin)
+│   │   ├── data/             # Données de test + factories + SQLite
+│   │   └── utils/            # Page Objects et utilitaires
+│   ├── config/               # Configuration des environnements
+│   └── reports/              # Rapports Allure
+└── docker-compose.yml        # Orchestration Docker
+```
+
 ## Commands
 
 ### Install dependencies
@@ -13,51 +29,60 @@ This is a test automation framework for the DigitalBank mobile banking applicati
 pip install -r digitalbank-automation/requirements.txt
 ```
 
-### Run tests
+### Run tests (local)
 ```bash
-# All tests must be run from the digitalbank-automation directory
 cd digitalbank-automation
 
-# All tests (traditional + BDD)
-pytest tests/ --headless -v
-
-# Smoke tests (quick verification)
+# Smoke tests
 pytest tests/ -m smoke --headless -v
 
-# Regression tests (full suite)
-pytest tests/ -m regression --headless -v
-
-# Traditional tests only
-pytest tests/functional/ --headless -v
+# All tests
+pytest tests/ --headless -v
 
 # BDD tests only
 pytest tests/bdd/ --headless -v
 
-# Single test file
-pytest tests/functional/test_authentication.py -v
+# Specific environment
+pytest tests/ --env=dev --headless -v
+```
 
-# Single test method
-pytest tests/functional/test_authentication.py::TestAuthentication::test_login_success -v
+### Run tests (Docker) - RECOMMENDED
+```bash
+# From project root (EDC3/)
 
-# Accessibility tests (WCAG 2.1)
-pytest tests/ -m accessibility --headless -v
+# Build and run smoke tests
+docker-compose up --build
 
-# Run on specific environment
-pytest tests/ --env=dev -v   # dev, int, uat, preprod
+# Run all tests
+docker-compose run --rm tests tests/ -v --env=docker
+
+# Run regression tests
+docker-compose run --rm tests tests/ -v --env=docker -m regression
+
+# Run BDD tests
+docker-compose run --rm tests tests/bdd/ -v --env=docker
+
+# Stop services
+docker-compose down
+```
+
+### View tests in real-time (VNC)
+```bash
+# Start services
+docker-compose up -d webapp selenium-hub chrome
+
+# Open http://localhost:7900 in browser to watch tests
 ```
 
 ### Generate Allure reports
 ```bash
+cd digitalbank-automation
 pytest tests/ --alluredir=reports/allure-results -v
 allure generate reports/allure-results -o reports/allure-report --clean
 allure open reports/allure-report
 ```
 
 ## Architecture
-
-### Directory Structure
-- `digitalbank-automation/` - Main test automation framework
-- `Projet_Etude_de_Cas_3/digitalbank/` - The target application under test (HTML-based banking app)
 
 ### Page Object Model
 All tests use the POM pattern. Pages inherit from `BasePage` (tests/utils/base_page.py) which provides:
@@ -69,28 +94,29 @@ All tests use the POM pattern. Pages inherit from `BasePage` (tests/utils/base_p
 
 Page objects are in `tests/utils/pages/` and use CSS selectors with `data-testid` attributes.
 
+### Test Data Management
+- **Static data**: `tests/data/test_users.json`
+- **Factories**: `tests/data/factories.py` (Faker-based generation)
+- **Database**: SQLite per environment (`tests/data/db/`)
+- **Centralized access**: `from tests.data import load_test_data, UserFactory`
+
 ### Fixtures (conftest.py)
-- `web_driver` - Selenium Chrome driver (use `--headless` flag)
+- `web_driver` - Selenium Chrome driver (local or remote via Selenium Grid)
 - `mobile_driver` - Appium driver for Android/iOS
-- `api_client` - requests Session for API testing
-- `environment` - Configuration based on `--env` flag
-- `test_data_generator` - Faker instance for generating French test data
+- `test_data` - Static test data from JSON
+- `data_factory` - Dynamic data generation factories
+- `standard_user`, `user_with_2fa` - Pre-configured test users
 
 ### pytest Markers
 - `@pytest.mark.smoke` - Quick critical tests
 - `@pytest.mark.regression` - Full test suite
 - `@pytest.mark.critical` - Blocking tests
 - `@pytest.mark.accessibility` / `@pytest.mark.wcag` - WCAG 2.1 compliance tests
-- `@pytest.mark.authentification` - Authentication tests
-- `@pytest.mark.securite` - Security tests
-- `@pytest.mark.2fa` - Two-factor authentication tests
 
 ### BDD Structure (tests/bdd/)
-The project includes a BDD layer using pytest-bdd for business-readable scenarios:
-- **features/**: Gherkin feature files (.feature) with scenarios in French descriptions
+- **features/**: Gherkin feature files with French descriptions
 - **step_definitions/**: Python step implementations
-- Feature files use English keywords (Given/When/Then) with French step text
-- Scenarios are automatically collected and run alongside traditional tests
+- Scenarios run alongside traditional tests
 
 ## Test Credentials
 
@@ -100,12 +126,20 @@ The project includes a BDD layer using pytest-bdd for business-readable scenario
 | With 2FA | marie.martin@email.com | SecurePass456! | 123456 |
 | Secondary | jean.dupont@email.com | Password123! | - |
 
+## Docker Services
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| webapp | http://localhost:8080 | Application DigitalBank |
+| selenium-hub | http://localhost:4444 | Selenium Grid Hub |
+| chrome (VNC) | http://localhost:7900 | Visualiser les tests |
+
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/test-automation.yml`) runs:
+GitHub Actions workflow runs:
 1. Smoke tests (blocking)
-2. Regression tests (parallelized by module)
+2. Regression tests (parallelized)
 3. Accessibility tests
 4. Allure report generation
 
-Triggers: push to main/develop, PRs to main, daily at 8h00 Paris time, manual dispatch.
+Triggers: push to main/develop, PRs to main, daily at 8h00 Paris time.

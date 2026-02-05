@@ -124,23 +124,29 @@ def mobile_driver(request, environment):
 
 @pytest.fixture(scope="function")
 def web_driver(request, environment):
-    """Fixture pour le driver Selenium (web)"""
+    """
+    Fixture pour le driver Selenium (web)
+    Utilise Chrome en mode headless si --headless est spécifié
+    """
     headless = request.config.getoption("--headless")
 
     options = selenium_webdriver.ChromeOptions()
     if headless:
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
     driver = selenium_webdriver.Chrome(options=options)
     driver.implicitly_wait(environment.get('implicit_wait', 10))
-    driver.get(environment['base_url'])
+
+    # URL de base : variable d'environnement > config
+    base_url = os.getenv('BASE_URL', environment['base_url'])
+    driver.get(base_url)
 
     yield driver
 
-    # Teardown
     driver.quit()
 
 
