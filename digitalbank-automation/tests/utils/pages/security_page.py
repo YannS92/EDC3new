@@ -54,10 +54,15 @@ class SecurityPage(BasePage):
 
     # --- Méthodes 2FA ---
 
+    def _js_click(self, locator):
+        """Clique via JavaScript (pour les éléments cachés par CSS comme les toggle-switch)"""
+        element = self.find_element(locator)
+        self.driver.execute_script("arguments[0].click();", element)
+
     @allure.step("Activation/Désactivation 2FA")
     def toggle_2fa(self):
         """Toggle la double authentification"""
-        self.click(self.TOGGLE_2FA)
+        self._js_click(self.TOGGLE_2FA)
 
     def is_2fa_enabled(self):
         """Vérifie si la 2FA est activée"""
@@ -81,12 +86,12 @@ class SecurityPage(BasePage):
     @allure.step("Toggle notifications email")
     def toggle_email_notifications(self):
         """Toggle les notifications par email"""
-        self.click(self.TOGGLE_EMAIL_NOTIF)
+        self._js_click(self.TOGGLE_EMAIL_NOTIF)
 
     @allure.step("Toggle notifications SMS")
     def toggle_sms_notifications(self):
         """Toggle les notifications SMS"""
-        self.click(self.TOGGLE_SMS_NOTIF)
+        self._js_click(self.TOGGLE_SMS_NOTIF)
 
     def is_email_notifications_enabled(self):
         """Vérifie si les notifications email sont activées"""
