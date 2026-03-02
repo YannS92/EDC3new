@@ -1,0 +1,33 @@
+name: DigitalBank - Docker Compose Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Build & Run Docker Compose
+        run: |
+          docker compose up --build --abort-on-container-exit
+          
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: digitalbank-html-report
+          path: digitalbank-automation/reports/report.html
+          retention-days: 30
