@@ -41,7 +41,7 @@ services:
     networks:
       - digitalbank-net
     # Tests smoke par défaut
-    command: ["tests/", "-v", "--headless", "-m", "smoke", "--alluredir=reports/allure-results", "--html=reports/report.html", "--self-contained-html"]
+    command: ["tests/", "-v", "--headless", "--alluredir=reports/allure-results", "--html=reports/report.html", "--self-contained-html"]
 
 networks:
   digitalbank-net:
