@@ -1,4 +1,4 @@
-name: DigitalBank - Docker Compose Tests
+name: DigitalBank - Docker Container Tests
 
 on:
   push:
@@ -16,10 +16,13 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Build & Run Docker Compose
+      - name: Build images
+        run: docker compose build
+
+      - name: Run tests related containers only
         run: |
-          docker compose up --build --abort-on-container-exit
-          
+          docker compose run --rm tests
+
       - name: Stop containers
         if: always()
         run: docker compose down -v
