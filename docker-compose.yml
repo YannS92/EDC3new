@@ -33,7 +33,6 @@ services:
       webapp:
         condition: service_healthy
     environment:
-      - VIEWPORT=desktop
       - BASE_URL=http://webapp/
       - PYTHONPATH=/app
     volumes:
@@ -41,7 +40,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command: ["tests/", "-v", "--headless", "-n", "auto", "--viewport=${VIEWPORT}", "--reruns", "1", "--reruns-delay", "2", "--alluredir=reports/allure-results", "--html=reports/report.html", "--self-contained-html"]
+    command: ["tests/", "-v", "--headless", "-n", "auto", "--viewport=desktop", "--reruns", "1", "--reruns-delay", "2", "--alluredir=reports/allure-results", "--html=reports/report.html", "--self-contained-html"]
 
 networks:
   digitalbank-net:
