@@ -31,8 +31,8 @@ from tests.data import (
 
 def load_config(config_file):
     """Charge un fichier de configuration YAML"""
-    config_path = os.path.join(os.path.dirname(__file__), 'config', config_file)
-    with open(config_path, 'r', encoding='utf-8') as f:
+    config_path = os.path.join(os.path.dirname(__file__), "config", config_file)
+    with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -42,19 +42,25 @@ def pytest_addoption(parser):
         "--env",
         action="store",
         default="dev",
-        help="Environnement de test: dev, int, uat, preprod"
+        help="Environnement de test: dev, int, uat, preprod",
     )
     parser.addoption(
         "--platform",
         action="store",
         default="android",
-        help="Plateforme: android, ios, web"
+        help="Plateforme: android, ios, web",
     )
     parser.addoption(
         "--headless",
         action="store_true",
         default=False,
-        help="Exécuter en mode headless (web uniquement)"
+        help="Exécuter en mode headless (web uniquement)",
+    )
+    parser.addoption(
+        "--viewport",
+        action="store",
+        default="desktop",
+        help="Résolution: desktop, mobile, tablet",
     )
 
 
@@ -62,13 +68,13 @@ def pytest_addoption(parser):
 def environment(request):
     """Fixture pour obtenir l'environnement de test"""
     env_name = request.config.getoption("--env")
-    config = load_config('environments.yaml')
+    config = load_config("environments.yaml")
 
-    if env_name not in config['environments']:
+    if env_name not in config["environments"]:
         raise ValueError(f"Environnement inconnu: {env_name}")
 
-    env_config = config['environments'][env_name]
-    env_config['name'] = env_name
+    env_config = config["environments"][env_name]
+    env_config["name"] = env_name
 
     # Remplacer les variables d'environnement
     _replace_env_vars(env_config)
@@ -80,9 +86,13 @@ def _replace_env_vars(config):
     """Remplace les placeholders ${VAR} par les valeurs d'environnement"""
     if isinstance(config, dict):
         for key, value in config.items():
-            if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
+            if (
+                isinstance(value, str)
+                and value.startswith("${")
+                and value.endswith("}")
+            ):
                 env_var = value[2:-1]
-                config[key] = os.getenv(env_var, '')
+                config[key] = os.getenv(env_var, "")
             elif isinstance(value, (dict, list)):
                 _replace_env_vars(value)
     elif isinstance(config, list):
@@ -93,28 +103,30 @@ def _replace_env_vars(config):
 @pytest.fixture(scope="session")
 def test_config():
     """Fixture pour la configuration des tests"""
-    return load_config('test_config.yaml')
+    return load_config("test_config.yaml")
 
 
 @pytest.fixture(scope="function")
 def mobile_driver(request, environment):
     """Fixture pour le driver Appium (mobile)"""
     platform = request.config.getoption("--platform")
-    config = load_config('environments.yaml')
+    config = load_config("environments.yaml")
 
-    capabilities = config['capabilities'].get(platform, {}).copy()
-    env_appium = environment.get('appium', {})
+    capabilities = config["capabilities"].get(platform, {}).copy()
+    env_appium = environment.get("appium", {})
 
-    capabilities.update({
-        'deviceName': env_appium.get('device_name', 'emulator-5554'),
-        'app': env_appium.get('app_path', ''),
-    })
+    capabilities.update(
+        {
+            "deviceName": env_appium.get("device_name", "emulator-5554"),
+            "app": env_appium.get("app_path", ""),
+        }
+    )
 
-    appium_server = config.get('appium_server', {})
+    appium_server = config.get("appium_server", {})
     server_url = f"http://{appium_server.get('host', 'localhost')}:{appium_server.get('port', 4723)}"
 
     driver = appium_webdriver.Remote(server_url, capabilities)
-    driver.implicitly_wait(environment.get('implicit_wait', 10))
+    driver.implicitly_wait(environment.get("implicit_wait", 10))
 
     yield driver
 
@@ -139,10 +151,10 @@ def web_driver(request, environment):
     options.add_argument("--window-size=1920,1080")
 
     driver = selenium_webdriver.Chrome(options=options)
-    driver.implicitly_wait(environment.get('implicit_wait', 10))
+    driver.implicitly_wait(environment.get("implicit_wait", 10))
 
     # URL de base : variable d'environnement > config
-    base_url = os.getenv('BASE_URL', environment['base_url'])
+    base_url = os.getenv("BASE_URL", environment["base_url"])
     driver.get(base_url)
 
     yield driver
@@ -156,13 +168,12 @@ def api_client(environment):
     import requests
 
     session = requests.Session()
-    session.headers.update({
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    })
+    session.headers.update(
+        {"Content-Type": "application/json", "Accept": "application/json"}
+    )
 
     # Stocker l'URL de base dans la session
-    session.base_url = environment['api_url']
+    session.base_url = environment["api_url"]
 
     yield session
 
@@ -173,13 +184,15 @@ def api_client(environment):
 def test_data_generator():
     """Fixture pour générer des données de test avec Faker"""
     from faker import Faker
-    fake = Faker('fr_FR')
+
+    fake = Faker("fr_FR")
     return fake
 
 
 # ═══════════════════════════════════════════════════════════════
 # FIXTURES DONNÉES DE TEST
 # ═══════════════════════════════════════════════════════════════
+
 
 @pytest.fixture(scope="function")
 def test_data():
@@ -217,36 +230,36 @@ def data_factory():
         Dictionnaire des factories disponibles
     """
     return {
-        'user': UserFactory,
-        'account': AccountFactory,
-        'transaction': TransactionFactory,
-        'beneficiary': BeneficiaryFactory,
-        'bill': BillFactory,
+        "user": UserFactory,
+        "account": AccountFactory,
+        "transaction": TransactionFactory,
+        "beneficiary": BeneficiaryFactory,
+        "bill": BillFactory,
     }
 
 
 @pytest.fixture
 def standard_user(test_data):
     """Fixture pour l'utilisateur standard"""
-    return test_data['users']['standard']
+    return test_data["users"]["standard"]
 
 
 @pytest.fixture
 def user_with_2fa(test_data):
     """Fixture pour l'utilisateur avec 2FA"""
-    return test_data['users']['with_2fa']
+    return test_data["users"]["with_2fa"]
 
 
 @pytest.fixture
 def invalid_credentials(test_data):
     """Fixture pour les identifiants invalides"""
-    return test_data['invalid_credentials']
+    return test_data["invalid_credentials"]
 
 
 @pytest.fixture
 def password_requirements(test_data):
     """Fixture pour les exigences de mot de passe"""
-    return test_data['password_requirements']
+    return test_data["password_requirements"]
 
 
 @pytest.fixture(scope="function")
@@ -303,6 +316,7 @@ def pytest_collection_modifyitems(config, items):
 # HOOKS BDD POUR ALLURE
 # ═══════════════════════════════════════════════════════════════
 
+
 def pytest_bdd_before_scenario(request, feature, scenario):
     """
     Hook exécuté avant chaque scénario BDD
@@ -315,11 +329,11 @@ def pytest_bdd_before_scenario(request, feature, scenario):
 
     # Mapping des tags vers Allure severity
     severity_mapping = {
-        'critical': allure.severity_level.CRITICAL,
-        'blocker': allure.severity_level.BLOCKER,
-        'normal': allure.severity_level.NORMAL,
-        'minor': allure.severity_level.MINOR,
-        'trivial': allure.severity_level.TRIVIAL,
+        "critical": allure.severity_level.CRITICAL,
+        "blocker": allure.severity_level.BLOCKER,
+        "normal": allure.severity_level.NORMAL,
+        "minor": allure.severity_level.MINOR,
+        "trivial": allure.severity_level.TRIVIAL,
     }
 
     for tag in scenario.tags:
@@ -328,14 +342,16 @@ def pytest_bdd_before_scenario(request, feature, scenario):
             allure.dynamic.severity(severity_mapping[tag_lower])
 
 
-def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
+def pytest_bdd_step_error(
+    request, feature, scenario, step, step_func, step_func_args, exception
+):
     """
     Hook exécuté lors d'une erreur dans un step BDD
     Capture une screenshot et l'attache au rapport Allure
     """
     # Récupérer le driver depuis les fixtures si disponible
     driver = None
-    for fixture_name in ['web_driver', 'driver']:
+    for fixture_name in ["web_driver", "driver"]:
         if fixture_name in request.fixturenames:
             try:
                 driver = request.getfixturevalue(fixture_name)
@@ -349,7 +365,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
             allure.attach(
                 screenshot,
                 name=f"Erreur - {step.name}",
-                attachment_type=allure.attachment_type.PNG
+                attachment_type=allure.attachment_type.PNG,
             )
         except Exception:
             pass
@@ -361,7 +377,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
         f"Step: {step.keyword} {step.name}\n"
         f"Error: {str(exception)}",
         name="Détails de l'erreur",
-        attachment_type=allure.attachment_type.TEXT
+        attachment_type=allure.attachment_type.TEXT,
     )
 
 

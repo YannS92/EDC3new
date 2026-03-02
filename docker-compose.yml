@@ -40,7 +40,6 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    # Tests smoke par défaut
     command: ["tests/", "-v", "--headless", "--reruns", "1", "--reruns-delay", "2", "--alluredir=reports/allure-results", "--html=reports/report.html", "--self-contained-html"]
 
 networks:
