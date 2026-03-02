@@ -50,36 +50,26 @@ pytest tests/ --env=dev --headless -v
 ```bash
 # From project root (EDC3/)
 
-# Build and run smoke tests
+# Build and run all tests (rapport HTML + Allure)
 docker-compose up --build
 
-# Run all tests
-docker-compose run --rm tests tests/ -v --env=docker
+# Run in background
+docker-compose up --build -d
+docker-compose logs -f tests
 
-# Run regression tests
+# Run specific suites
+docker-compose run --rm tests tests/ -v --env=docker -m smoke
 docker-compose run --rm tests tests/ -v --env=docker -m regression
-
-# Run BDD tests
 docker-compose run --rm tests tests/bdd/ -v --env=docker
 
 # Stop services
 docker-compose down
 ```
 
-### View tests in real-time (VNC)
+### View reports
 ```bash
-# Start services
-docker-compose up -d webapp selenium-hub chrome
-
-# Open http://localhost:7900 in browser to watch tests
-```
-
-### Generate Allure reports
-```bash
-cd digitalbank-automation
-pytest tests/ --alluredir=reports/allure-results -v
-allure generate reports/allure-results -o reports/allure-report --clean
-allure open reports/allure-report
+# Rapport HTML (autonome, pas besoin d'outil)
+# Ouvrir digitalbank-automation/reports/report.html dans le navigateur
 ```
 
 ## Architecture
@@ -131,15 +121,12 @@ Page objects are in `tests/utils/pages/` and use CSS selectors with `data-testid
 | Service | URL | Description |
 |---------|-----|-------------|
 | webapp | http://localhost:8080 | Application DigitalBank |
-| selenium-hub | http://localhost:4444 | Selenium Grid Hub |
-| chrome (VNC) | http://localhost:7900 | Visualiser les tests |
 
 ## CI/CD
 
-GitHub Actions workflow runs:
-1. Smoke tests (blocking)
-2. Regression tests (parallelized)
-3. Accessibility tests
-4. Allure report generation
+GitHub Actions workflow (`docker compose run --rm tests`):
+- Build Docker images
+- Run all tests
+- Upload HTML report (30 days retention)
 
-Triggers: push to main/develop, PRs to main, daily at 8h00 Paris time.
+Triggers: push to main/develop, PRs to main, manual (workflow_dispatch).
