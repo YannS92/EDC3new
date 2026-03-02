@@ -100,6 +100,16 @@ def _replace_env_vars(config):
             _replace_env_vars(item)
 
 
+def get_viewport_size(viewport):
+    """Retourne la largeur et hauteur selon la résolution"""
+    sizes = {
+        "desktop": (1920, 1080),
+        "mobile": (390, 844),  # exemple iPhone 14
+        "tablet": (768, 1024),  # exemple iPad
+    }
+    return sizes.get(viewport, (1920, 1080))  # desktop par défaut
+
+
 @pytest.fixture(scope="session")
 def test_config():
     """Fixture pour la configuration des tests"""
@@ -141,6 +151,8 @@ def web_driver(request, environment):
     Utilise Chrome en mode headless si --headless est spécifié
     """
     headless = request.config.getoption("--headless")
+    viewport = request.config.getoption("--viewport")
+    width, height = get_viewport_size(viewport)
 
     options = selenium_webdriver.ChromeOptions()
     if headless:
@@ -148,7 +160,7 @@ def web_driver(request, environment):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
+    options.add_argument(f"--window-size={width},{height}")
 
     driver = selenium_webdriver.Chrome(options=options)
     driver.implicitly_wait(environment.get("implicit_wait", 10))
