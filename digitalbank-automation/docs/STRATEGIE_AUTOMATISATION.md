@@ -235,20 +235,24 @@ Un scenario est eligible a l'automatisation s'il repond aux criteres suivants :
 
 Fichier : `.github/workflows/test-automation.yml`
 
-| Etape | Description |
-|-------|-------------|
-| Checkout | Recuperation du code source |
-| Build | Construction des images Docker (webapp + tests) |
-| Run tests | Execution des tests via `docker compose run --rm tests` |
-| Cleanup | Arret des conteneurs (`docker compose down -v`) |
-| Upload report | Publication du rapport HTML (retention 30 jours) |
+Le pipeline est compose de 4 jobs :
+
+| Job | Description | Dependance |
+|-----|-------------|------------|
+| **smoke-tests** | Tests smoke bloquants (~1 min) | - |
+| **regression-tests** | Suite complete parallelisee (`-n auto`) | smoke-tests |
+| **accessibility-tests** | Tests WCAG 2.1 | smoke-tests |
+| **publish-results** | Resume automatique sur les PR | regression + accessibility |
+
+Les jobs regression et accessibilite s'executent **en parallele** apres les smoke tests.
 
 ### 7.2 Declencheurs
 
 | Evenement | Action |
 |-----------|--------|
 | Push sur `main` ou `develop` | Execution automatique |
-| Pull Request vers `main` | Execution automatique (bloquant) |
+| Pull Request vers `main` | Execution automatique (bloquant) + commentaire resume |
+| Cron `0 23 * * 1-5` | Execution quotidienne a 00h00 Paris (lundi-vendredi) |
 | Manuel (`workflow_dispatch`) | Execution a la demande |
 
 ### 7.3 Execution Docker
@@ -267,14 +271,15 @@ docker-compose run --rm tests tests/ -v --env=docker -m regression
 docker-compose run --rm tests tests/bdd/ -v --env=docker
 ```
 
-### 7.4 Rapports
+### 7.4 Rapports et Visibilite
 
 | Type | Emplacement | Description |
 |------|-------------|-------------|
 | pytest-html | `reports/report.html` | Rapport HTML autonome, consultable sans outil supplementaire |
 | Allure | `reports/allure-results/` | Donnees brutes JSON pour generation Allure (necessite Java) |
 | Screenshots | `reports/screenshots/` | Captures automatiques en cas d'echec |
-| GitHub Artifacts | Actions > Artifacts | Rapport HTML accessible 30 jours apres chaque execution CI |
+| GitHub Artifacts | Actions > Artifacts | 3 rapports (smoke, regression, accessibilite) - retention 30 jours |
+| Commentaire PR | Pull Request | Resume automatique des resultats poste sur chaque PR |
 
 ---
 

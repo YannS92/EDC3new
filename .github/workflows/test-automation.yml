@@ -1,36 +1,150 @@
-name: DigitalBank - Docker Container Tests
+name: DigitalBank - Tests Automatises
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  schedule:
+    # Execution quotidienne a 00h00 heure de Paris (23h00 UTC la veille)
+    - cron: '0 23 * * 0-4'
   workflow_dispatch:
 
 jobs:
-  run-tests:
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 1 : Tests Smoke (bloquants)
+  # ═══════════════════════════════════════════════════════════════
+  smoke-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Build images
+      - name: Build images Docker
         run: docker compose build
 
-      - name: Run tests related containers only
+      - name: Run smoke tests
         run: |
-          docker compose run --rm tests
+          docker compose run --rm tests tests/ -v --headless -m smoke --html=reports/smoke-report.html --self-contained-html
 
       - name: Stop containers
         if: always()
         run: docker compose down -v
 
-      - name: Upload HTML report
+      - name: Upload smoke report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: digitalbank-html-report
-          path: digitalbank-automation/reports/report.html
+          name: smoke-report
+          path: digitalbank-automation/reports/smoke-report.html
           retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 2 : Tests Regression (parallelises, apres smoke)
+  # ═══════════════════════════════════════════════════════════════
+  regression-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: smoke-tests
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Build images Docker
+        run: docker compose build
+
+      - name: Run regression tests (parallelises)
+        run: |
+          docker compose run --rm tests tests/ -v --headless -n auto --html=reports/regression-report.html --self-contained-html --alluredir=reports/allure-results
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+
+      - name: Upload regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report
+          path: |
+            digitalbank-automation/reports/regression-report.html
+            digitalbank-automation/reports/allure-results/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 3 : Tests Accessibilite (en parallele de regression)
+  # ═══════════════════════════════════════════════════════════════
+  accessibility-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: smoke-tests
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Build images Docker
+        run: docker compose build
+
+      - name: Run accessibility tests
+        run: |
+          docker compose run --rm tests tests/ -v --headless -m accessibility --html=reports/accessibility-report.html --self-contained-html
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+
+      - name: Upload accessibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: digitalbank-automation/reports/accessibility-report.html
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 4 : Publication des resultats
+  # ═══════════════════════════════════════════════════════════════
+  publish-results:
+    runs-on: ubuntu-latest
+    needs: [regression-tests, accessibility-tests]
+    if: always()
+
+    steps:
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/
+
+      - name: Publier le resume sur la PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const smokeResult = '${{ needs.smoke-tests.result }}';
+            const regressionResult = '${{ needs.regression-tests.result }}';
+            const accessibilityResult = '${{ needs.accessibility-tests.result }}';
+
+            const statusIcon = (status) => status === 'success' ? '✅' : status === 'failure' ? '❌' : '⚠️';
+
+            const body = `## Resultats des Tests Automatises
+
+            | Suite | Statut |
+            |-------|--------|
+            | Smoke Tests | ${statusIcon(smokeResult)} ${smokeResult} |
+            | Regression Tests | ${statusIcon(regressionResult)} ${regressionResult} |
+            | Accessibility Tests | ${statusIcon(accessibilityResult)} ${accessibilityResult} |
+
+            📊 Les rapports HTML sont disponibles dans les **Artifacts** de ce workflow.
+
+            🤖 _Genere automatiquement par le pipeline CI/CD DigitalBank_`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

@@ -124,9 +124,10 @@ Page objects are in `tests/utils/pages/` and use CSS selectors with `data-testid
 
 ## CI/CD
 
-GitHub Actions workflow (`docker compose run --rm tests`):
-- Build Docker images
-- Run all tests
-- Upload HTML report (30 days retention)
+GitHub Actions pipeline (4 jobs) :
+1. **Smoke tests** (bloquants)
+2. **Regression tests** (parallelisés avec `-n auto`)
+3. **Accessibility tests** (en parallèle de regression)
+4. **Publish results** (commentaire automatique sur les PR)
 
-Triggers: push to main/develop, PRs to main, manual (workflow_dispatch).
+Triggers: push to main/develop, PRs to main, cron quotidien 00h00 Paris (lun-ven), manual.
