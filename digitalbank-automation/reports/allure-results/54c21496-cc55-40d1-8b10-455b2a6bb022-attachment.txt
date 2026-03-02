@@ -1,0 +1,4 @@
+Feature: Gestion de la double authentification
+Scenario: Activation de la double authentification
+Step: When j'active la double authentification
+Error: Message: 
