@@ -8,7 +8,8 @@
       "Bash(pip show:*)",
       "Bash(dir:*)",
       "Bash(pytest:*)",
-      "Bash(docker-compose config:*)"
+      "Bash(docker-compose config:*)",
+      "Bash(docker-compose logs:*)"
     ]
   }
 }
