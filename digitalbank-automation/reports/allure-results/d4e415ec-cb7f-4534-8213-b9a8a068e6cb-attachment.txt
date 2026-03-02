@@ -1,1 +1,0 @@
-ERROR    tests.utils.base_page:base_page.py:78 Élément non cliquable: ('css selector', "[data-testid='toggle-2fa']")
