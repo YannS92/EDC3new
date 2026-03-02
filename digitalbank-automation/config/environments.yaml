@@ -15,8 +15,8 @@ environments:
 
   dev:
     name: "Développement (local)"
-    # Live Server (VSCode) ou serveur local
-    base_url: "http://127.0.0.1:5500/digitalbank/"
+    # Docker webapp sur le port 8080
+    base_url: "http://localhost:8080"
     # Pas d'API réelle en local (appli simulée). Laisse vide ou commente si ton code le permet.
     api_url: ""
     database:
