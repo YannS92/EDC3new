@@ -1,8 +1,6 @@
 # Docker Compose - DigitalBank
 # 2 conteneurs : Frontend (nginx) + Tests (Python/Chrome)
 
-version: '3.8'
-
 services:
   # ═══════════════════════════════════════════════════════════════
   # FRONTEND - Application DigitalBank
