@@ -1,32 +1,31 @@
-# Stratégie d'Automatisation des Tests - DigitalBank
+# Strategie d'Automatisation des Tests - DigitalBank
 
 ## 1. Introduction
 
-Ce document définit la stratégie d'automatisation des tests pour l'application mobile bancaire DigitalBank. L'objectif est d'améliorer la qualité du produit et de réduire le temps de livraison en automatisant les tests critiques.
+Ce document definit la strategie d'automatisation des tests pour l'application bancaire DigitalBank. L'objectif est d'ameliorer la qualite du produit et de reduire le temps de livraison en automatisant les tests critiques dans le cadre d'une methodologie Agile avec des sprints de deux semaines.
 
 ---
 
-## 2. Périmètre de l'Automatisation
+## 2. Perimetre de l'Automatisation
 
-### 2.1 Phases de Tests Concernées
+### 2.1 Phases de Tests Concernees
 
-| Phase | Description | Automatisation |
-|-------|-------------|----------------|
-| Tests Unitaires | Validation des composants individuels | Oui (Jest/JUnit) |
-| Tests d'Intégration | Vérification des interactions entre modules | Oui (API Testing) |
-| Tests Fonctionnels | Validation des parcours utilisateur | Oui (Appium/Selenium) |
-| Tests de Régression | Vérification de non-régression | Oui (Suite complète) |
-| Tests de Performance | Charge et temps de réponse | Oui (k6/JMeter) |
-| Tests de Sécurité | Vulnérabilités OWASP | Partiel (OWASP ZAP) |
-| Tests d'Accessibilité | Conformité WCAG 2.1 | Oui (axe-core) |
+| Phase | Description | Automatisation | Statut |
+|-------|-------------|----------------|--------|
+| Tests Fonctionnels | Validation des parcours utilisateur | Oui (Selenium) | Implemente |
+| Tests BDD | Scenarios Gherkin en francais | Oui (pytest-bdd) | Implemente |
+| Tests de Regression | Verification de non-regression | Oui (Suite complete) | Implemente |
+| Tests d'Accessibilite | Conformite WCAG 2.1 | Oui (axe-core) | Implemente |
+| Tests Unitaires | Validation des composants individuels | Hors perimetre | - |
+| Tests de Performance | Charge et temps de reponse | Prevus (Sprint futur) | Non implemente |
+| Tests de Securite | Vulnerabilites OWASP | Prevus (Sprint futur) | Non implemente |
 
-### 2.2 Types de Tests Automatisés
+### 2.2 Types de Tests Automatises
 
-1. **Tests Smoke** : Vérification rapide des fonctionnalités critiques
-2. **Tests de Régression** : Suite complète après chaque modification
-3. **Tests End-to-End** : Parcours utilisateur complets
-4. **Tests API** : Validation des endpoints backend
-5. **Tests de Performance** : Temps de réponse < 2 secondes
+1. **Tests Smoke** (`@pytest.mark.smoke`) : Verification rapide des fonctionnalites critiques (~11 tests, ~1 min)
+2. **Tests de Regression** (`@pytest.mark.regression`) : Suite complete apres chaque modification (~42 tests, ~3 min)
+3. **Tests BDD** : Scenarios Gherkin avec double couverture (fonctionnel + BDD)
+4. **Tests d'Accessibilite** (`@pytest.mark.accessibility`) : Conformite WCAG 2.1 via axe-core
 
 ---
 
@@ -34,21 +33,27 @@ Ce document définit la stratégie d'automatisation des tests pour l'application
 
 ### 3.1 Architecture des Environnements
 
-| Environnement | Usage | Données | Fréquence d'exécution |
+| Environnement | Usage | Donnees | Frequence d'execution |
 |---------------|-------|---------|----------------------|
-| DEV | Tests unitaires et développement | Données mockées | À chaque commit |
-| INT | Tests d'intégration | Données synthétiques | Quotidien |
-| UAT | Tests fonctionnels et acceptance | Données anonymisées | Par sprint |
-| PREPROD | Tests de performance et sécurité | Clone production | Hebdomadaire |
+| Docker | Execution CI/CD et locale | Donnees synthetiques (SQLite) | A chaque push/PR |
+| DEV | Developpement local | Donnees mockees (SQLite) | A chaque commit |
+| INT | Tests d'integration | Donnees synthetiques | Quotidien |
+| UAT | Tests fonctionnels et acceptance | Donnees anonymisees | Par sprint |
+| PREPROD | Validation pre-production | Clone production | Hebdomadaire |
 
 ### 3.2 Configuration des Environnements
 
+Fichier : `config/environments.yaml`
+
 ```yaml
 environments:
+  docker:
+    base_url: "http://webapp/"             # Conteneur nginx
+    timeout: 60
+
   dev:
-    base_url: "https://dev.digitalbank.local"
-    api_url: "https://api-dev.digitalbank.local"
-    database: "digitalbank_dev"
+    base_url: "http://127.0.0.1:5500/digitalbank/"
+    timeout: 30
 
   int:
     base_url: "https://int.digitalbank.local"
@@ -66,197 +71,340 @@ environments:
     database: "digitalbank_preprod"
 ```
 
+Chaque environnement dispose de sa propre base SQLite (`test_data_{env}.db`) pour l'isolation des donnees.
+
 ---
 
 ## 4. Outils d'Automatisation
 
 ### 4.1 Stack Technique Retenue
 
-| Catégorie | Outil | Justification |
+| Categorie | Outil | Justification |
 |-----------|-------|---------------|
-| **Framework Mobile** | Appium | Multi-plateforme (iOS/Android), open source |
-| **Framework Web** | Selenium WebDriver | Standard industrie, large communauté |
-| **Langage** | Python | Lisibilité, bibliothèques riches, courbe d'apprentissage faible |
-| **Framework Test** | pytest | Fixtures, parametrization, plugins |
-| **Tests API** | requests + pytest | Intégration native Python |
-| **Tests Performance** | k6 | Moderne, scriptable en JS, CI-friendly |
-| **Tests Accessibilité** | axe-core | Référence WCAG, intégration Selenium |
-| **Reporting** | Allure | Rapports visuels, historique, intégration CI |
-| **CI/CD** | GitHub Actions | Intégration native GitHub, gratuit open source |
-| **Gestion Données** | Faker + SQLAlchemy | Génération données réalistes, ORM |
+| **Framework Web** | Selenium 4.16 | Standard industrie, large communaute |
+| **Framework Mobile** | Appium 3.1 | Multi-plateforme (iOS/Android), configure mais non utilise dans cette phase |
+| **Langage** | Python 3.11 | Lisibilite, bibliotheques riches, courbe d'apprentissage faible |
+| **Framework Test** | pytest 8.0 | Fixtures, parametrization, plugins, markers |
+| **BDD** | pytest-bdd 7.0 | Gherkin natif en francais, integration pytest |
+| **Tests Accessibilite** | axe-core (axe-selenium-python) | Reference WCAG 2.1, integration Selenium |
+| **Reporting** | pytest-html + Allure | Rapport HTML autonome + donnees Allure |
+| **CI/CD** | GitHub Actions + Docker | Integration native GitHub, containerisation |
+| **Gestion Donnees** | Faker + SQLAlchemy + SQLite | Generation donnees realistes, ORM, isolation par env |
+| **Containerisation** | Docker Compose | Orchestration webapp (nginx) + tests (Python/Chrome) |
 
 ### 4.2 Architecture du Framework
 
 ```
 digitalbank-automation/
-├── .github/
-│   └── workflows/          # Pipelines CI/CD
 ├── config/
-│   ├── environments.yaml   # Configuration environnements
-│   └── test_config.yaml    # Configuration tests
+│   ├── environments.yaml       # Configuration multi-environnement
+│   └── test_config.yaml        # Configuration suites de tests
 ├── tests/
-│   ├── functional/         # Tests fonctionnels
-│   │   ├── test_authentication.py
-│   │   ├── test_account.py
-│   │   ├── test_transfers.py
-│   │   ├── test_payments.py
-│   │   └── test_security_settings.py
-│   ├── api/                # Tests API
-│   ├── performance/        # Tests performance
-│   ├── accessibility/      # Tests accessibilité
-│   ├── data/               # Données de test
-│   └── utils/              # Utilitaires communs
-├── docs/                   # Documentation
-├── reports/                # Rapports générés
-├── requirements.txt        # Dépendances Python
-└── conftest.py            # Configuration pytest
+│   ├── functional/             # Tests fonctionnels traditionnels
+│   │   ├── test_authentication.py    # 12 tests (login, 2FA, logout, reset, accessibilite)
+│   │   └── test_security_settings.py # 11 tests (mot de passe, 2FA, notifications, accessibilite)
+│   ├── bdd/                    # Tests BDD (Gherkin)
+│   │   ├── features/
+│   │   │   ├── authentification/     # connexion, deconnexion, 2FA
+│   │   │   └── securite/            # changement mot de passe, gestion 2FA
+│   │   └── step_definitions/        # Implementation des steps
+│   ├── data/                   # Gestion des donnees
+│   │   ├── test_users.json          # Donnees statiques
+│   │   ├── models.py                # Modeles SQLAlchemy (User, Account, Transaction, etc.)
+│   │   ├── factories.py             # Factories Faker (generation dynamique)
+│   │   ├── database.py              # DatabaseManager (Singleton par env)
+│   │   ├── data_manager.py          # Gestionnaire centralise
+│   │   ├── seed_data.py             # Scripts seed/cleanup/reset + CLI
+│   │   └── db/                      # Bases SQLite par environnement
+│   └── utils/                  # Page Object Model
+│       ├── base_page.py             # BasePage (waits, click, accessibilite)
+│       └── pages/
+│           ├── login_page.py        # Page connexion + 2FA + reset
+│           ├── dashboard_page.py    # Page tableau de bord
+│           ├── security_page.py     # Page parametres securite
+│           ├── transfer_page.py     # Page virements (Page Object pret)
+│           └── bills_page.py        # Page factures (Page Object pret)
+├── reports/                    # Rapports generes
+│   ├── report.html                  # Rapport pytest-html (autonome)
+│   └── allure-results/              # Donnees brutes Allure
+├── docs/                       # Documentation
+├── Dockerfile                  # Image Python + Chrome headless
+├── requirements.txt            # Dependances Python
+└── conftest.py                # Configuration pytest globale
 ```
+
+### 4.3 Pattern Page Object Model (POM)
+
+Toutes les pages heritent de `BasePage` qui fournit :
+- Attentes explicites (`WebDriverWait`)
+- Actions communes (`click`, `enter_text`, `get_text`)
+- Verification d'accessibilite via axe-core (`check_accessibility`)
+- Capture de screenshots pour Allure
+- Support JavaScript click pour les elements caches par CSS
+
+Les locators utilisent des selecteurs CSS avec attributs `data-testid` pour la stabilite.
 
 ---
 
-## 5. Planification des Développements
+## 5. Planification des Developpements
 
 ### 5.1 Roadmap par Sprint
 
-| Sprint | Semaines | Livrables |
-|--------|----------|-----------|
-| Sprint 1 | S1-S2 | Framework de base, tests authentification |
-| Sprint 2 | S3-S4 | Tests consultation compte, historique |
-| Sprint 3 | S5-S6 | Tests virements bancaires |
-| Sprint 4 | S7-S8 | Tests paiement factures |
-| Sprint 5 | S9-S10 | Tests sécurité et accessibilité |
-| Sprint 6 | S11-S12 | Tests performance, optimisation CI/CD |
+| Sprint | Semaines | Livrables | Statut |
+|--------|----------|-----------|--------|
+| Sprint 1 | S1-S2 | Framework de base, Page Objects, tests authentification | Termine |
+| Sprint 2 | S3-S4 | Tests securite, BDD (Gherkin), gestion donnees | Termine |
+| Sprint 3 | S5-S6 | Integration Docker, CI/CD GitHub Actions, rapports | Termine |
+| Sprint 4 | S7-S8 | Tests virements bancaires (Page Object pret) | A planifier |
+| Sprint 5 | S9-S10 | Tests paiement factures (Page Object pret) | A planifier |
+| Sprint 6 | S11-S12 | Tests performance, optimisation CI/CD | A planifier |
 
-### 5.2 Estimation par Module
+### 5.2 Couverture Actuelle par Module
 
-| Module | Nombre de scénarios | Priorité |
-|--------|---------------------|----------|
-| Authentification | 15 | P1 - Critique |
-| Consultation Compte | 10 | P1 - Critique |
-| Virements | 12 | P1 - Critique |
-| Paiement Factures | 8 | P2 - Haute |
-| Paramètres Sécurité | 10 | P2 - Haute |
-| Notifications | 5 | P3 - Moyenne |
+| Module | Tests Fonctionnels | Tests BDD | Priorite | Statut |
+|--------|--------------------|-----------|----------|--------|
+| Authentification (login, 2FA, logout, reset) | 12 tests | 8 scenarios | P1 - Critique | Implemente |
+| Parametres Securite (mot de passe, 2FA, notifications) | 11 tests | 6 scenarios | P2 - Haute | Implemente |
+| Consultation Compte (solde, historique) | - | - | P1 - Critique | Page Object pret |
+| Virements Bancaires (internes, externes) | - | - | P1 - Critique | Page Object pret |
+| Paiement Factures | - | - | P2 - Haute | Page Object pret |
+
+**Note** : Les Page Objects pour les modules non encore testes (`transfer_page.py`, `bills_page.py`, `dashboard_page.py`) sont deja developpes et prets a recevoir des tests. Cela permet une montee en charge rapide lors des prochains sprints.
+
+### 5.3 Repartition des Tests par Marker
+
+| Marker | Nombre de tests | Usage |
+|--------|-----------------|-------|
+| `@smoke` | ~11 | Verification rapide, execution a chaque push |
+| `@regression` | ~30 | Suite complete, execution quotidienne |
+| `@critical` | ~8 | Tests bloquants pour la mise en production |
+| `@accessibility` / `@wcag` | 2 | Conformite WCAG 2.1 |
+| `@xfail` | 1 | Bug connu (labels manquants sur les toggles) |
 
 ---
 
-## 6. Critères d'Éligibilité à l'Automatisation
+## 6. Criteres d'Eligibilite a l'Automatisation
 
-### 6.1 Matrice de Décision
+### 6.1 Matrice de Decision
 
-Un scénario est éligible à l'automatisation s'il répond aux critères suivants :
+Un scenario est eligible a l'automatisation s'il repond aux criteres suivants :
 
-| Critère | Poids | Seuil |
+| Critere | Poids | Seuil |
 |---------|-------|-------|
-| Fréquence d'exécution | 30% | ≥ 1 fois/sprint |
-| Stabilité fonctionnelle | 25% | Pas de changement prévu sur 3 sprints |
-| Criticité métier | 20% | Bloquant ou majeur |
-| Complexité d'automatisation | 15% | Effort < 2 jours |
-| ROI | 10% | Gain temps > 50% après 5 exécutions |
+| Frequence d'execution | 30% | >= 1 fois/sprint |
+| Stabilite fonctionnelle | 25% | Pas de changement prevu sur 3 sprints |
+| Criticite metier | 20% | Bloquant ou majeur |
+| Complexite d'automatisation | 15% | Effort < 2 jours |
+| ROI | 10% | Gain temps > 50% apres 5 executions |
 
-### 6.2 Scénarios Prioritaires
+### 6.2 Scenarios Prioritaires
 
-**Automatiser en priorité :**
-- Parcours de connexion/déconnexion
-- Consultation du solde
-- Virement simple entre comptes propres
+**Automatises (Sprint 1-3) :**
+- Parcours de connexion/deconnexion (standard + 2FA)
+- Reinitialisation de mot de passe
 - Modification du mot de passe
-- Activation/désactivation 2FA
+- Activation/desactivation 2FA
+- Gestion des notifications (email/SMS)
+- Verification accessibilite (WCAG 2.1)
+
+**A automatiser (Sprint 4-5) :**
+- Consultation du solde et historique
+- Virement simple entre comptes propres
+- Virement vers beneficiaire externe
+- Paiement de factures
 
 **Ne pas automatiser :**
 - Tests exploratoires
-- Scénarios à données sensibles réelles
-- Fonctionnalités en cours de développement
-- Tests visuels subjectifs
+- Scenarios a donnees sensibles reelles
+- Fonctionnalites en cours de developpement
+- Tests visuels subjectifs (rendu graphique)
 
 ### 6.3 Checklist Avant Automatisation
 
-- [ ] Le scénario manuel est documenté et validé
-- [ ] Les données de test sont identifiées
-- [ ] Les prérequis techniques sont disponibles
-- [ ] Les critères d'acceptance sont définis
+- [ ] Le scenario manuel est documente et valide
+- [ ] Les donnees de test sont identifiees
+- [ ] Les prerequis techniques sont disponibles
+- [ ] Les criteres d'acceptance sont definis
 - [ ] L'environnement de test est stable
 
 ---
 
-## 7. Conformité et Normes
+## 7. Integration CI/CD
 
-### 7.1 RGPD
+### 7.1 Pipeline GitHub Actions
 
-- Aucune donnée personnelle réelle dans les tests
-- Données synthétiques générées par Faker
-- Anonymisation obligatoire pour les copies de production
-- Logs de test sans informations sensibles
+Fichier : `.github/workflows/test-automation.yml`
 
-### 7.2 WCAG 2.1 (Accessibilité)
+| Etape | Description |
+|-------|-------------|
+| Checkout | Recuperation du code source |
+| Build | Construction des images Docker (webapp + tests) |
+| Run tests | Execution des tests via `docker compose run --rm tests` |
+| Cleanup | Arret des conteneurs (`docker compose down -v`) |
+| Upload report | Publication du rapport HTML (retention 30 jours) |
 
-Tests automatisés pour :
-- Niveau A : Contraste, navigation clavier, alternatives textuelles
-- Niveau AA : Redimensionnement texte, focus visible, messages d'erreur
+### 7.2 Declencheurs
 
-### 7.3 Éco-conception
+| Evenement | Action |
+|-----------|--------|
+| Push sur `main` ou `develop` | Execution automatique |
+| Pull Request vers `main` | Execution automatique (bloquant) |
+| Manuel (`workflow_dispatch`) | Execution a la demande |
 
-- Optimisation des scripts pour réduire les ressources
-- Nettoyage des données après exécution
-- Parallélisation intelligente (pas de sur-consommation)
-- Rapports légers (pas de captures systématiques)
+### 7.3 Execution Docker
+
+```bash
+# Execution par defaut (tous les tests + rapport HTML)
+docker-compose up --build
+
+# Execution en arriere-plan
+docker-compose up --build -d
+docker-compose logs -f tests
+
+# Execution par suite
+docker-compose run --rm tests tests/ -v --env=docker -m smoke
+docker-compose run --rm tests tests/ -v --env=docker -m regression
+docker-compose run --rm tests tests/bdd/ -v --env=docker
+```
+
+### 7.4 Rapports
+
+| Type | Emplacement | Description |
+|------|-------------|-------------|
+| pytest-html | `reports/report.html` | Rapport HTML autonome, consultable sans outil supplementaire |
+| Allure | `reports/allure-results/` | Donnees brutes JSON pour generation Allure (necessite Java) |
+| Screenshots | `reports/screenshots/` | Captures automatiques en cas d'echec |
+| GitHub Artifacts | Actions > Artifacts | Rapport HTML accessible 30 jours apres chaque execution CI |
 
 ---
 
-## 8. Indicateurs de Suivi
+## 8. Systeme de Gestion des Donnees
 
-### 8.1 KPIs Automatisation
+### 8.1 Architecture 3 Niveaux
 
-| Indicateur | Cible | Fréquence mesure |
-|------------|-------|------------------|
-| Couverture automatisée | > 70% des tests de régression | Mensuel |
-| Taux de réussite | > 95% (hors bugs réels) | Par exécution |
-| Temps d'exécution suite complète | < 30 minutes | Par exécution |
-| Faux positifs | < 5% | Hebdomadaire |
-| Maintenabilité (temps correction) | < 1h/script | Mensuel |
+| Niveau | Source | Usage |
+|--------|--------|-------|
+| **Statique** | `test_users.json` | Donnees de reference (users, accounts, beneficiaires, factures) |
+| **Dynamique** | Factories Faker (`factories.py`) | Generation de donnees realistes a la volee |
+| **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de donnees dediee par environnement |
 
-### 8.2 Dashboard de Suivi
+### 8.2 Modeles de Donnees (ORM)
 
-Les résultats seront visibles via :
-- **GitHub Actions** : Statut des exécutions
-- **Allure Reports** : Rapports détaillés
-- **GitHub Issues** : Suivi des anomalies
+5 modeles SQLAlchemy avec relations :
+- `User` (email, password, name, has_2fa, totp_code)
+- `Account` (user_id, type, number/IBAN, balance)
+- `Transaction` (account_id, type credit/debit, amount, description)
+- `Beneficiary` (user_id, name, iban)
+- `Bill` (provider, reference, amount, due_date, paid)
+
+### 8.3 Scripts Pre/Post-Execution
+
+```bash
+# CLI disponible
+python -m tests.data.seed_data seed --env=dev -v       # Initialiser
+python -m tests.data.seed_data cleanup --env=dev -v     # Nettoyer
+python -m tests.data.seed_data reset --env=dev -v       # Reinitialiser
+python -m tests.data.seed_data random --env=dev -c 20 -v  # Donnees aleatoires
+```
+
+Hooks pytest integres dans `conftest.py` :
+- `test_database` (fixture session) : seed automatique au debut des tests
+- `pytest_sessionfinish` : fermeture des connexions en fin de session
+
+### 8.4 Isolation Multi-Environnement
+
+- Singleton `DatabaseManager` par environnement
+- Base SQLite separee : `tests/data/db/test_data_{env}.db`
+- Parametrable via `--env` : `pytest tests/ --env=uat`
+- Variables d'environnement supportees (`${DB_USER}`, `${DB_PASSWORD}`)
 
 ---
 
-## 9. Gouvernance
+## 9. Conformite et Normes
 
-### 9.1 Rôles et Responsabilités
+### 9.1 RGPD
 
-| Rôle | Responsabilité |
+- Aucune donnee personnelle reelle dans les tests
+- Donnees synthetiques generees par Faker (locale `fr_FR`)
+- Base SQLite locale, pas de transmission de donnees
+- Logs de test sans informations sensibles (mots de passe masques)
+
+### 9.2 WCAG 2.1 (Accessibilite)
+
+- Tests automatises via axe-core sur chaque page
+- Verification des niveaux A et AA
+- Bug connu documente : labels manquants sur les toggles (`@xfail`)
+- Violations reportees en JSON dans les rapports Allure
+
+### 9.3 Eco-conception
+
+- Mode headless Chrome (pas de rendu graphique)
+- Nettoyage des donnees apres execution
+- Rapports legers (`--self-contained-html`)
+- Screenshots uniquement en cas d'echec (pas systematique)
+- Image Docker optimisee (Python slim + Chrome minimal)
+
+---
+
+## 10. Indicateurs de Suivi
+
+### 10.1 KPIs Automatisation
+
+| Indicateur | Cible | Actuel |
+|------------|-------|--------|
+| Couverture automatisee (modules critiques) | > 70% | ~40% (2/5 modules) |
+| Taux de reussite | > 95% | 100% (41 passed, 1 xfail) |
+| Temps d'execution suite complete | < 5 minutes | ~70 secondes |
+| Faux positifs | < 5% | 0% |
+
+### 10.2 Dashboard de Suivi
+
+Les resultats sont visibles via :
+- **GitHub Actions** : Statut pass/fail a chaque push/PR
+- **pytest-html** : Rapport HTML detaille (`reports/report.html`)
+- **GitHub Artifacts** : Rapport telechargeables 30 jours
+- **GitHub Issues** : Suivi des anomalies detectees
+
+---
+
+## 11. Gouvernance
+
+### 11.1 Roles et Responsabilites
+
+| Role | Responsabilite |
 |------|----------------|
-| Test Lead | Stratégie, priorisation, reporting |
-| Automation Engineer | Développement et maintenance scripts |
-| Développeur | Revue code, testabilité |
-| Product Owner | Validation critères acceptance |
+| Test Lead | Strategie, priorisation, reporting |
+| Automation Engineer | Developpement et maintenance scripts |
+| Developpeur | Revue code, testabilite, attributs `data-testid` |
+| Product Owner | Validation criteres acceptance |
 
-### 9.2 Processus de Revue
+### 11.2 Processus de Revue
 
 1. Tout nouveau script passe par une Pull Request
 2. Revue obligatoire par un pair
-3. Tests de validation sur environnement INT
-4. Merge sur branche principale après approbation
+3. Tests de validation sur environnement Docker
+4. Merge sur branche principale apres approbation
 
 ---
 
-## 10. Annexes
+## 12. Annexes
 
-### 10.1 Glossaire
+### 12.1 Glossaire
 
 - **CI/CD** : Continuous Integration / Continuous Deployment
 - **WCAG** : Web Content Accessibility Guidelines
-- **RGPD** : Règlement Général sur la Protection des Données
+- **RGPD** : Reglement General sur la Protection des Donnees
 - **2FA** : Two-Factor Authentication
+- **POM** : Page Object Model
+- **BDD** : Behavior-Driven Development
 - **ROI** : Return On Investment
+- **SPA** : Single Page Application
 
-### 10.2 Références
+### 12.2 References
 
-- [Documentation Appium](https://appium.io/docs/)
+- [Documentation Selenium](https://www.selenium.dev/documentation/)
 - [Guide pytest](https://docs.pytest.org/)
+- [pytest-bdd](https://pytest-bdd.readthedocs.io/)
 - [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
-- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
+- [axe-core](https://www.deque.com/axe/)
+- [Docker Compose](https://docs.docker.com/compose/)
