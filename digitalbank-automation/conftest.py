@@ -4,11 +4,10 @@ Ce fichier contient les fixtures et hooks globaux pour les tests
 """
 
 import os
+import platform
 import pytest
 import yaml
 import allure
-from datetime import datetime
-from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
 from dotenv import load_dotenv
 
@@ -18,14 +17,7 @@ load_dotenv()
 # Import des modules de données de test
 from tests.data import (
     load_test_data,
-    get_db,
     DatabaseManager,
-    UserFactory,
-    AccountFactory,
-    TransactionFactory,
-    BeneficiaryFactory,
-    BillFactory,
-    TestDataManager,
 )
 
 
@@ -43,12 +35,6 @@ def pytest_addoption(parser):
         action="store",
         default="dev",
         help="Environnement de test: dev, int, uat, preprod",
-    )
-    parser.addoption(
-        "--platform",
-        action="store",
-        default="android",
-        help="Plateforme: android, ios, web",
     )
     parser.addoption(
         "--headless",
@@ -117,40 +103,6 @@ def get_viewport_size(viewport):
     return sizes.get(viewport, (1920, 1080))  # desktop par défaut
 
 
-@pytest.fixture(scope="session")
-def test_config():
-    """Fixture pour la configuration des tests"""
-    return load_config("test_config.yaml")
-
-
-@pytest.fixture(scope="function")
-def mobile_driver(request, environment):
-    """Fixture pour le driver Appium (mobile)"""
-    platform = request.config.getoption("--platform")
-    config = load_config("environments.yaml")
-
-    capabilities = config["capabilities"].get(platform, {}).copy()
-    env_appium = environment.get("appium", {})
-
-    capabilities.update(
-        {
-            "deviceName": env_appium.get("device_name", "emulator-5554"),
-            "app": env_appium.get("app_path", ""),
-        }
-    )
-
-    appium_server = config.get("appium_server", {})
-    server_url = f"http://{appium_server.get('host', 'localhost')}:{appium_server.get('port', 4723)}"
-
-    driver = appium_webdriver.Remote(server_url, capabilities)
-    driver.implicitly_wait(environment.get("implicit_wait", 10))
-
-    yield driver
-
-    # Teardown
-    driver.quit()
-
-
 @pytest.fixture(scope="function")
 def web_driver(request, environment):
     """
@@ -182,7 +134,6 @@ def web_driver(request, environment):
         driver = selenium_webdriver.Firefox(options=options)
 
     elif browser == "webkit":
-        import platform
         if platform.system() != "Darwin":
             raise pytest.UsageError(
                 "webkit (Safari) n'est disponible que sur macOS. "
@@ -204,33 +155,6 @@ def web_driver(request, environment):
     driver.quit()
 
 
-@pytest.fixture(scope="function")
-def api_client(environment):
-    """Fixture pour le client API"""
-    import requests
-
-    session = requests.Session()
-    session.headers.update(
-        {"Content-Type": "application/json", "Accept": "application/json"}
-    )
-
-    # Stocker l'URL de base dans la session
-    session.base_url = environment["api_url"]
-
-    yield session
-
-    session.close()
-
-
-@pytest.fixture(scope="session")
-def test_data_generator():
-    """Fixture pour générer des données de test avec Faker"""
-    from faker import Faker
-
-    fake = Faker("fr_FR")
-    return fake
-
-
 # ═══════════════════════════════════════════════════════════════
 # FIXTURES DONNÉES DE TEST
 # ═══════════════════════════════════════════════════════════════
@@ -245,39 +169,6 @@ def test_data():
         Dictionnaire contenant toutes les données de test
     """
     return load_test_data()
-
-
-@pytest.fixture(scope="session")
-def test_database(request):
-    """
-    Fixture pour la base de données de test avec seeding
-
-    Initialise la base de données avec les données de référence
-    au début de la session de tests.
-    """
-    env = request.config.getoption("--env", default="dev")
-    manager = TestDataManager(env)
-    manager.seed_standard_data()
-    yield manager.db
-    # Cleanup optionnel à la fin de session
-    # manager.cleanup()
-
-
-@pytest.fixture(scope="function")
-def data_factory():
-    """
-    Fixture pour la génération dynamique de données
-
-    Returns:
-        Dictionnaire des factories disponibles
-    """
-    return {
-        "user": UserFactory,
-        "account": AccountFactory,
-        "transaction": TransactionFactory,
-        "beneficiary": BeneficiaryFactory,
-        "bill": BillFactory,
-    }
 
 
 @pytest.fixture
@@ -302,21 +193,6 @@ def invalid_credentials(test_data):
 def password_requirements(test_data):
     """Fixture pour les exigences de mot de passe"""
     return test_data["password_requirements"]
-
-
-@pytest.fixture(scope="function")
-def screenshot_on_failure(request, mobile_driver):
-    """Capture une screenshot en cas d'échec du test"""
-    yield
-
-    if request.node.rep_call.failed:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        test_name = request.node.name
-        screenshot_dir = "reports/screenshots"
-        os.makedirs(screenshot_dir, exist_ok=True)
-
-        screenshot_path = os.path.join(screenshot_dir, f"{test_name}_{timestamp}.png")
-        mobile_driver.save_screenshot(screenshot_path)
 
 
 @pytest.hookimpl(hookwrapper=True)
