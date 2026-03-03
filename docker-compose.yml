@@ -22,7 +22,7 @@ services:
       - digitalbank-net
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chrome in Desktop Mode
+  # TESTS - Chromium in Desktop Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-desktop:
     build:
@@ -47,6 +47,7 @@ services:
         "--reruns", "1",
         "--reruns-delay", "2",
         "--env", "docker",
+        "--browser", "chromium",
         "--viewport", "desktop",
         "--alluredir", "reports/allure-results",
         "--html", "reports/report-chromium-desktop.html",
@@ -54,7 +55,7 @@ services:
       ]
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chrome in Tablet Mode
+  # TESTS - Chromium in Tablet Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-tablet:
     build:
@@ -86,7 +87,7 @@ services:
       ]
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chrome in Mobile Mode
+  # TESTS - Chromium in Mobile Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-mobile:
     build:

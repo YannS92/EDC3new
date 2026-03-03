@@ -60,7 +60,7 @@ def pytest_addoption(parser):
         "--viewport",
         action="store",
         default="desktop",
-        help="Résolution: desktop, mobile, tablet",
+        help="Résolution: desktop (défaut), mobile, tablet",
     )
     parser.addoption(
         "--browser",
