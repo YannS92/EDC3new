@@ -8,6 +8,7 @@ import platform
 import pytest
 import yaml
 import allure
+from datetime import datetime
 from selenium import webdriver as selenium_webdriver
 from dotenv import load_dotenv
 
@@ -193,6 +194,40 @@ def invalid_credentials(test_data):
 def password_requirements(test_data):
     """Fixture pour les exigences de mot de passe"""
     return test_data["password_requirements"]
+
+
+@pytest.fixture(autouse=True)
+def screenshot_on_failure(request):
+    """Capture une screenshot Allure automatiquement sur chaque test en échec"""
+    yield
+
+    report = getattr(request.node, "rep_call", None)
+    if report is None or not report.failed:
+        return
+
+    driver = None
+    if "web_driver" in request.fixturenames:
+        try:
+            driver = request.getfixturevalue("web_driver")
+        except Exception:
+            pass
+
+    if driver:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        test_name = request.node.name
+        screenshot_dir = "reports/screenshots"
+        os.makedirs(screenshot_dir, exist_ok=True)
+        screenshot_path = os.path.join(screenshot_dir, f"{test_name}_{timestamp}.png")
+        try:
+            driver.save_screenshot(screenshot_path)
+            with open(screenshot_path, "rb") as f:
+                allure.attach(
+                    f.read(),
+                    name=f"Echec - {test_name}",
+                    attachment_type=allure.attachment_type.PNG,
+                )
+        except Exception:
+            pass
 
 
 @pytest.hookimpl(hookwrapper=True)
