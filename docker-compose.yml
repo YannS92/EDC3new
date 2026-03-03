@@ -25,6 +25,15 @@ services:
   # TESTS - Chromium in Desktop Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-desktop:
+    environment:
+      - BROWSER=chromium
+      - VIEWPORT=desktop
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
@@ -32,9 +41,6 @@ services:
     depends_on:
       webapp:
         condition: service_healthy
-    environment:
-      - BASE_URL=http://webapp/
-      - PYTHONPATH=/app
     volumes:
       - ./digitalbank-automation/reports:/app/reports
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
@@ -43,14 +49,14 @@ services:
     command:
       [
         "tests/", "-v", "--headless",
-        "-n", "auto",
-        "--reruns", "1",
-        "--reruns-delay", "2",
-        "--env", "docker",
-        "--browser", "chromium",
-        "--viewport", "desktop",
-        "--alluredir", "reports/allure-results",
-        "--html", "reports/report-chromium-desktop.html",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
         "--self-contained-html",
       ]
 
@@ -58,6 +64,15 @@ services:
   # TESTS - Chromium in Tablet Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-tablet:
+    environment:
+      - BROWSER=chromium
+      - VIEWPORT=tablet
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
@@ -65,9 +80,6 @@ services:
     depends_on:
       webapp:
         condition: service_healthy
-    environment:
-      - BASE_URL=http://webapp/
-      - PYTHONPATH=/app
     volumes:
       - ./digitalbank-automation/reports:/app/reports
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
@@ -76,13 +88,14 @@ services:
     command:
       [
         "tests/", "-v", "--headless",
-        "-n", "auto",
-        "--reruns", "1",
-        "--reruns-delay", "2",
-        "--env", "docker",
-        "--viewport", "tablet",
-        "--alluredir", "reports/allure-results",
-        "--html", "reports/report-chromium-tablet.html",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
         "--self-contained-html",
       ]
 
@@ -90,6 +103,15 @@ services:
   # TESTS - Chromium in Mobile Mode
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-mobile:
+    environment:
+      - BROWSER=chromium
+      - VIEWPORT=mobile
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
@@ -97,9 +119,6 @@ services:
     depends_on:
       webapp:
         condition: service_healthy
-    environment:
-      - BASE_URL=http://webapp/
-      - PYTHONPATH=/app
     volumes:
       - ./digitalbank-automation/reports:/app/reports
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
@@ -108,13 +127,248 @@ services:
     command:
       [
         "tests/", "-v", "--headless",
-        "-n", "auto",
-        "--reruns", "1",
-        "--reruns-delay", "2",
-        "--env", "docker",
-        "--viewport", "mobile",
-        "--alluredir", "reports/allure-results",
-        "--html", "reports/report-chromium-mobile.html",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Firefox in Desktop Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-firefox-desktop:
+    environment:
+      - BROWSER=firefox
+      - VIEWPORT=desktop
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-firefox-desktop
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Firefox in Tablet Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-firefox-tablet:
+    environment:
+      - BROWSER=firefox
+      - VIEWPORT=tablet
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-firefox-tablet
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Firefox in Mobile Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-firefox-mobile:
+    environment:
+      - BROWSER=firefox
+      - VIEWPORT=mobile
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-firefox-mobile
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Webkit in Desktop Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-webkit-desktop:
+    environment:
+      - BROWSER=webkit
+      - VIEWPORT=desktop
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-webkit-desktop
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Webkit in Tablet Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-webkit-tablet:
+    environment:
+      - BROWSER=webkit
+      - VIEWPORT=tablet
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-webkit-tablet
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
+        "--self-contained-html",
+      ]
+
+  # ═══════════════════════════════════════════════════════════════
+  # TESTS - Webkit in Mobile Mode
+  # ═══════════════════════════════════════════════════════════════
+  tests-webkit-mobile:
+    environment:
+      - BROWSER=webkit
+      - VIEWPORT=mobile
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-webkit-mobile
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
+    networks:
+      - digitalbank-net
+    command:
+      [
+        "tests/", "-v", "--headless",
+        "-n", "$PARALLEL_PROCESSES",
+        "--reruns", "$RERUN_NB",
+        "--reruns-delay", "$RERUN_DELAY",
+        "--env", "$ENV",
+        "--browser", "$BROWSER",
+        "--viewport", "$VIEWPORT",
+        "--alluredir", "$REPORT_DIR/allure-results",
+        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
         "--self-contained-html",
       ]
 
