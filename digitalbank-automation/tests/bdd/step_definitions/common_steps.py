@@ -27,17 +27,17 @@ def sur_page_connexion(login_page):
 
 
 @given("je suis connecté en tant qu'utilisateur standard")
-def connecte_utilisateur_standard(login_page, dashboard_page, standard_user, context):
+def connecte_utilisateur_standard(login_page, dashboard_page, standard_user, scenario_context):
     """Connecte l'utilisateur standard"""
     with allure.step(f"Connexion avec {standard_user['email']}"):
         login_page.login(standard_user['email'], standard_user['password'])
         assert dashboard_page.is_dashboard_displayed(), \
             "Le dashboard devrait être affiché après connexion"
-        context['current_user'] = standard_user
+        scenario_context['current_user'] = standard_user
 
 
 @given("je suis connecté en tant qu'utilisateur avec 2FA")
-def connecte_utilisateur_2fa(login_page, dashboard_page, user_with_2fa, context):
+def connecte_utilisateur_2fa(login_page, dashboard_page, user_with_2fa, scenario_context):
     """Connecte l'utilisateur avec 2FA"""
     with allure.step(f"Connexion avec {user_with_2fa['email']}"):
         login_page.login(user_with_2fa['email'], user_with_2fa['password'])
@@ -47,7 +47,7 @@ def connecte_utilisateur_2fa(login_page, dashboard_page, user_with_2fa, context)
         login_page.submit_2fa_code()
         assert dashboard_page.is_dashboard_displayed(), \
             "Le dashboard devrait être affiché après validation 2FA"
-        context['current_user'] = user_with_2fa
+        scenario_context['current_user'] = user_with_2fa
 
 
 # ═══════════════════════════════════════════════════════════════
