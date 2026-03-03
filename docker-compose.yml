@@ -1,5 +1,6 @@
 # Docker Compose - DigitalBank
-# 2 conteneurs : Frontend (nginx) + Tests (Python/Chrome)
+# Frontend (nginx) + 9 conteneurs de tests (3 browsers x 3 viewports)
+# Les variables d'environnement sont lues par entrypoint.sh au démarrage du conteneur
 
 services:
   # ═══════════════════════════════════════════════════════════════
@@ -22,7 +23,7 @@ services:
       - digitalbank-net
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chromium in Desktop Mode
+  # TESTS - Chromium
   # ═══════════════════════════════════════════════════════════════
   tests-chromium-desktop:
     environment:
@@ -46,23 +47,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chromium in Tablet Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-chromium-tablet:
     environment:
       - BROWSER=chromium
@@ -85,23 +70,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Chromium in Mobile Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-chromium-mobile:
     environment:
       - BROWSER=chromium
@@ -124,22 +93,9 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Firefox in Desktop Mode
+  # TESTS - Firefox
   # ═══════════════════════════════════════════════════════════════
   tests-firefox-desktop:
     environment:
@@ -163,23 +119,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Firefox in Tablet Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-firefox-tablet:
     environment:
       - BROWSER=firefox
@@ -202,23 +142,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Firefox in Mobile Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-firefox-mobile:
     environment:
       - BROWSER=firefox
@@ -241,22 +165,9 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
   # ═══════════════════════════════════════════════════════════════
-  # TESTS - Webkit in Desktop Mode
+  # TESTS - Webkit
   # ═══════════════════════════════════════════════════════════════
   tests-webkit-desktop:
     environment:
@@ -280,23 +191,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Webkit in Tablet Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-webkit-tablet:
     environment:
       - BROWSER=webkit
@@ -319,23 +214,7 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
-  # ═══════════════════════════════════════════════════════════════
-  # TESTS - Webkit in Mobile Mode
-  # ═══════════════════════════════════════════════════════════════
   tests-webkit-mobile:
     environment:
       - BROWSER=webkit
@@ -358,19 +237,6 @@ services:
       - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
-    command:
-      [
-        "tests/", "-v",
-        "-n", "$PARALLEL_PROCESSES",
-        "--reruns", "$RERUN_NB",
-        "--reruns-delay", "$RERUN_DELAY",
-        "--env", "$ENV",
-        "--browser", "$BROWSER",
-        "--viewport", "$VIEWPORT",
-        "--alluredir", "$REPORT_DIR/allure-results",
-        "--html", "$REPORT_DIR/report-$BROWSER-$VIEWPORT.html",
-        "--self-contained-html",
-      ]
 
 networks:
   digitalbank-net:
