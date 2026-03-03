@@ -11,44 +11,44 @@ import allure
 # ═══════════════════════════════════════════════════════════════
 
 @when(parsers.parse('je me connecte avec "{email}" et "{password}"'))
-def connexion_avec_identifiants(login_page, email, password, context):
+def connexion_avec_identifiants(login_page, email, password, scenario_context):
     """Effectue une connexion avec les identifiants fournis"""
     with allure.step(f"Connexion avec email: {email}"):
         login_page.login(email, password)
-        context['login_email'] = email
-        context['login_password'] = password
+        scenario_context['login_email'] = email
+        scenario_context['login_password'] = password
 
 
 @when("je me connecte avec des identifiants valides")
-def connexion_identifiants_valides(login_page, standard_user, context):
+def connexion_identifiants_valides(login_page, standard_user, scenario_context):
     """Effectue une connexion avec les identifiants valides de l'utilisateur standard"""
     with allure.step(f"Connexion avec {standard_user['email']}"):
         login_page.login(standard_user['email'], standard_user['password'])
-        context['current_user'] = standard_user
+        scenario_context['current_user'] = standard_user
 
 
 @when("je me connecte avec un mot de passe incorrect")
-def connexion_mot_de_passe_incorrect(login_page, standard_user, invalid_credentials, context):
+def connexion_mot_de_passe_incorrect(login_page, standard_user, invalid_credentials, scenario_context):
     """Effectue une connexion avec un mot de passe incorrect"""
     with allure.step("Connexion avec mot de passe incorrect"):
         login_page.login(standard_user['email'], invalid_credentials['wrong_password'])
-        context['login_email'] = standard_user['email']
+        scenario_context['login_email'] = standard_user['email']
 
 
 @when("je me connecte avec un email inexistant")
-def connexion_email_inexistant(login_page, invalid_credentials, context):
+def connexion_email_inexistant(login_page, invalid_credentials, scenario_context):
     """Effectue une connexion avec un email inexistant"""
     with allure.step("Connexion avec email inexistant"):
         login_page.login(invalid_credentials['wrong_email'], "SomePassword123!")
-        context['login_email'] = invalid_credentials['wrong_email']
+        scenario_context['login_email'] = invalid_credentials['wrong_email']
 
 
 @when(parsers.parse('je saisis le code 2FA "{code}"'))
-def saisir_code_2fa(login_page, code, context):
+def saisir_code_2fa(login_page, code, scenario_context):
     """Saisit le code 2FA"""
     with allure.step(f"Saisie du code 2FA: {code}"):
         login_page.enter_2fa_code(code)
-        context['2fa_code'] = code
+        scenario_context['2fa_code'] = code
 
 
 @when("je valide le code 2FA")
@@ -73,11 +73,11 @@ def clic_mot_de_passe_oublie(login_page):
 
 
 @when(parsers.parse('je demande la réinitialisation pour "{email}"'))
-def demander_reinitialisation(login_page, email, context):
+def demander_reinitialisation(login_page, email, scenario_context):
     """Demande la réinitialisation du mot de passe"""
     with allure.step(f"Demande de réinitialisation pour: {email}"):
         login_page.request_password_reset(email)
-        context['reset_email'] = email
+        scenario_context['reset_email'] = email
 
 
 # ═══════════════════════════════════════════════════════════════

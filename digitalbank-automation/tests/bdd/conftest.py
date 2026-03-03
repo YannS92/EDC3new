@@ -39,9 +39,10 @@ def security_page(web_driver):
 # ═══════════════════════════════════════════════════════════════
 
 @pytest.fixture
-def context():
+def scenario_context():
     """
     Fixture pour stocker le contexte partagé entre les steps d'un scénario
     Permet de passer des données entre Given/When/Then
+    (nommé scenario_context pour éviter le conflit avec le BrowserContext de pytest-playwright)
     """
     return {}

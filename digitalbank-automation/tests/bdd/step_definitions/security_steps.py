@@ -20,21 +20,21 @@ def sur_page_securite(dashboard_page, security_page):
 
 
 @given("la double authentification est désactivée")
-def deux_fa_desactivee(security_page, context):
+def deux_fa_desactivee(security_page, scenario_context):
     """S'assure que la 2FA est désactivée"""
     with allure.step("Vérification que la 2FA est désactivée"):
         if security_page.is_2fa_enabled():
             security_page.disable_2fa()
-        context['initial_2fa_state'] = False
+        scenario_context['initial_2fa_state'] = False
 
 
 @given("la double authentification est activée")
-def deux_fa_activee(security_page, context):
+def deux_fa_activee(security_page, scenario_context):
     """S'assure que la 2FA est activée"""
     with allure.step("Vérification que la 2FA est activée"):
         if not security_page.is_2fa_enabled():
             security_page.enable_2fa()
-        context['initial_2fa_state'] = True
+        scenario_context['initial_2fa_state'] = True
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -56,27 +56,27 @@ def ouvrir_modal_mot_de_passe(security_page):
 
 
 @when(parsers.parse('je change mon mot de passe de "{current}" à "{new}"'))
-def changer_mot_de_passe(security_page, current, new, context):
+def changer_mot_de_passe(security_page, current, new, scenario_context):
     """Change le mot de passe"""
     with allure.step(f"Changement de mot de passe"):
         security_page.change_password(current, new)
-        context['new_password'] = new
+        scenario_context['new_password'] = new
 
 
 @when("j'active la double authentification")
-def activer_2fa(security_page, context):
+def activer_2fa(security_page, scenario_context):
     """Active la 2FA"""
     with allure.step("Activation de la double authentification"):
         security_page.enable_2fa()
-        context['2fa_action'] = 'enable'
+        scenario_context['2fa_action'] = 'enable'
 
 
 @when("je désactive la double authentification")
-def desactiver_2fa(security_page, context):
+def desactiver_2fa(security_page, scenario_context):
     """Désactive la 2FA"""
     with allure.step("Désactivation de la double authentification"):
         security_page.disable_2fa()
-        context['2fa_action'] = 'disable'
+        scenario_context['2fa_action'] = 'disable'
 
 
 @when("j'annule le changement de mot de passe")
@@ -87,11 +87,11 @@ def annuler_changement_mot_de_passe(security_page):
 
 
 @when(parsers.parse('je saisis un nouveau mot de passe "{password}"'))
-def saisir_nouveau_mot_de_passe(security_page, password, context):
+def saisir_nouveau_mot_de_passe(security_page, password, scenario_context):
     """Saisit un nouveau mot de passe"""
     with allure.step(f"Saisie du nouveau mot de passe"):
         security_page.enter_new_password(password)
-        context['entered_password'] = password
+        scenario_context['entered_password'] = password
 
 
 # ═══════════════════════════════════════════════════════════════
