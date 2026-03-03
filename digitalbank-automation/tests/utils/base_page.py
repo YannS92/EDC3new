@@ -1,15 +1,13 @@
 """
 Classe de base pour le pattern Page Object Model
-Fournit les méthodes communes à toutes les pages
+Fournit les méthodes communes à toutes les pages (Playwright)
 """
 
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 import allure
 import logging
 import os
 from datetime import datetime
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -17,187 +15,189 @@ logger = logging.getLogger(__name__)
 class BasePage:
     """Classe de base pour toutes les pages de l'application"""
 
-    def __init__(self, driver, timeout=15):
+    def __init__(self, page, timeout=15):
         """
-        Initialise la page de base
-
         Args:
-            driver: Instance du driver (Appium ou Selenium)
-            timeout: Timeout par défaut pour les attentes (secondes)
+            page: Instance Playwright Page
+            timeout: Timeout par défaut en secondes (converti en ms pour Playwright)
         """
-        self.driver = driver
+        self.page = page
         self.timeout = timeout
-        self.wait = WebDriverWait(driver, timeout)
+        self._timeout_ms = timeout * 1000
 
-    def find_element(self, locator):
+    def find_element(self, selector):
         """
-        Trouve un élément avec attente explicite
+        Retourne un Locator Playwright après avoir attendu que l'élément soit attaché au DOM.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
 
         Returns:
-            WebElement trouvé
+            Playwright Locator
         """
         try:
-            element = self.wait.until(EC.presence_of_element_located(locator))
-            return element
-        except TimeoutException:
-            logger.error(f"Élément non trouvé: {locator}")
-            self._capture_screenshot(f"element_not_found_{locator[1]}")
+            locator = self.page.locator(selector)
+            locator.wait_for(state="attached", timeout=self._timeout_ms)
+            return locator
+        except PlaywrightTimeoutError:
+            logger.error(f"Élément non trouvé: {selector}")
+            self._capture_screenshot(f"element_not_found")
             raise
 
-    def find_elements(self, locator):
+    def find_elements(self, selector):
         """
-        Trouve plusieurs éléments
+        Retourne la liste des Locators correspondant au sélecteur.
 
         Args:
-            locator: Tuple (By, value) pour localiser les éléments
+            selector: Sélecteur CSS (string)
 
         Returns:
-            Liste de WebElements
+            Liste de Playwright Locators
         """
         try:
-            elements = self.wait.until(EC.presence_of_all_elements_located(locator))
-            return elements
-        except TimeoutException:
+            return self.page.locator(selector).all()
+        except PlaywrightTimeoutError:
             return []
 
-    def click(self, locator):
+    def click(self, selector):
         """
-        Clique sur un élément après attente de cliquabilité
+        Clique sur un élément (auto-wait Playwright).
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
         """
         try:
-            element = self.wait.until(EC.element_to_be_clickable(locator))
-            element.click()
-            logger.info(f"Clic sur l'élément: {locator}")
-        except TimeoutException:
-            logger.error(f"Élément non cliquable: {locator}")
-            self._capture_screenshot(f"element_not_clickable_{locator[1]}")
+            self.page.locator(selector).click(timeout=self._timeout_ms)
+            logger.info(f"Clic sur l'élément: {selector}")
+        except PlaywrightTimeoutError:
+            logger.error(f"Élément non cliquable: {selector}")
+            self._capture_screenshot(f"element_not_clickable")
             raise
 
-    def enter_text(self, locator, text):
+    def enter_text(self, selector, text):
         """
-        Saisit du texte dans un champ
+        Efface et remplit un champ texte.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
             text: Texte à saisir
         """
-        element = self.find_element(locator)
-        element.clear()
-        element.send_keys(text)
-        logger.info(f"Texte saisi dans {locator}: {'*' * len(text) if 'password' in str(locator).lower() else text}")
+        self.page.locator(selector).fill(text, timeout=self._timeout_ms)
+        logger.info(f"Texte saisi dans {selector}: {'*' * len(text) if 'password' in selector.lower() else text}")
 
-    def get_text(self, locator):
+    def get_text(self, selector):
         """
-        Récupère le texte d'un élément
+        Récupère le texte visible d'un élément.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
 
         Returns:
             Texte de l'élément
         """
-        element = self.find_element(locator)
-        return element.text
+        return self.page.locator(selector).inner_text(timeout=self._timeout_ms)
 
-    def is_element_visible(self, locator, timeout=None):
+    def is_element_visible(self, selector, timeout=None):
         """
-        Vérifie si un élément est visible
+        Vérifie si un élément est visible.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
-            timeout: Timeout personnalisé (optionnel)
+            selector: Sélecteur CSS (string)
+            timeout: Timeout en secondes (optionnel)
 
         Returns:
             True si visible, False sinon
         """
+        t_ms = (timeout or self.timeout) * 1000
         try:
-            wait = WebDriverWait(self.driver, timeout or self.timeout)
-            wait.until(EC.visibility_of_element_located(locator))
+            self.page.locator(selector).wait_for(state="visible", timeout=t_ms)
             return True
-        except TimeoutException:
+        except PlaywrightTimeoutError:
             return False
 
-    def is_element_present(self, locator, timeout=None):
+    def is_element_present(self, selector, timeout=None):
         """
-        Vérifie si un élément est présent dans le DOM
+        Vérifie si un élément est présent dans le DOM.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
-            timeout: Timeout personnalisé (optionnel)
+            selector: Sélecteur CSS (string)
+            timeout: Timeout en secondes (optionnel)
 
         Returns:
             True si présent, False sinon
         """
+        t_ms = (timeout or self.timeout) * 1000
         try:
-            wait = WebDriverWait(self.driver, timeout or self.timeout)
-            wait.until(EC.presence_of_element_located(locator))
+            self.page.locator(selector).wait_for(state="attached", timeout=t_ms)
             return True
-        except TimeoutException:
+        except PlaywrightTimeoutError:
             return False
 
-    def wait_for_element_to_disappear(self, locator, timeout=None):
+    def wait_for_element_to_disappear(self, selector, timeout=None):
         """
-        Attend qu'un élément disparaisse
+        Attend qu'un élément disparaisse.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
-            timeout: Timeout personnalisé (optionnel)
+            selector: Sélecteur CSS (string)
+            timeout: Timeout en secondes (optionnel)
         """
+        t_ms = (timeout or self.timeout) * 1000
         try:
-            wait = WebDriverWait(self.driver, timeout or self.timeout)
-            wait.until(EC.invisibility_of_element_located(locator))
-        except TimeoutException:
-            logger.warning(f"L'élément est toujours visible: {locator}")
+            self.page.locator(selector).wait_for(state="hidden", timeout=t_ms)
+        except PlaywrightTimeoutError:
+            logger.warning(f"L'élément est toujours visible: {selector}")
 
-    def scroll_to_element(self, locator):
+    def wait_for_not_hidden(self, selector, timeout=None):
         """
-        Fait défiler jusqu'à un élément
+        Attend qu'un élément n'ait plus la classe CSS 'hidden'.
+        Utilisé pour les modales qui utilisent une classe CSS pour se cacher.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
+            timeout: Timeout en secondes (optionnel)
         """
-        element = self.find_element(locator)
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        t_ms = (timeout or self.timeout) * 1000
+        self.page.wait_for_function(
+            f"!document.querySelector('{selector}')?.classList.contains('hidden')",
+            timeout=t_ms,
+        )
 
-    def get_attribute(self, locator, attribute):
+    def scroll_to_element(self, selector):
         """
-        Récupère un attribut d'un élément
+        Fait défiler jusqu'à un élément.
 
         Args:
-            locator: Tuple (By, value) pour localiser l'élément
+            selector: Sélecteur CSS (string)
+        """
+        self.page.locator(selector).scroll_into_view_if_needed(timeout=self._timeout_ms)
+
+    def get_attribute(self, selector, attribute):
+        """
+        Récupère un attribut d'un élément.
+
+        Args:
+            selector: Sélecteur CSS (string)
             attribute: Nom de l'attribut
 
         Returns:
             Valeur de l'attribut
         """
-        element = self.find_element(locator)
-        return element.get_attribute(attribute)
+        return self.page.locator(selector).get_attribute(attribute, timeout=self._timeout_ms)
 
     def _capture_screenshot(self, name):
-        """
-        Capture une screenshot pour le rapport Allure
-
-        Args:
-            name: Nom du fichier de screenshot
-        """
+        """Capture une screenshot pour le rapport Allure."""
         try:
-            screenshot = self.driver.get_screenshot_as_png()
+            screenshot = self.page.screenshot()
             allure.attach(screenshot, name=name, attachment_type=allure.attachment_type.PNG)
         except Exception as e:
             logger.error(f"Erreur lors de la capture d'écran: {e}")
 
     def capture_screenshot(self, name=None):
         """
-        Capture une screenshot et la sauvegarde dans le dossier reports/screenshots
+        Capture une screenshot et la sauvegarde dans reports/screenshots.
 
         Args:
-            name: Nom du fichier (optionnel, généré automatiquement si non fourni)
+            name: Nom du fichier (optionnel)
 
         Returns:
             Chemin du fichier screenshot
@@ -215,43 +215,35 @@ class BasePage:
         screenshot_path = os.path.join(screenshot_dir, name)
 
         try:
-            self.driver.save_screenshot(screenshot_path)
+            self.page.screenshot(path=screenshot_path)
             logger.info(f"Screenshot sauvegardée: {screenshot_path}")
             with open(screenshot_path, 'rb') as f:
-                screenshot_content = f.read()
-            allure.attach(screenshot_content, name=name, attachment_type=allure.attachment_type.PNG)
+                allure.attach(f.read(), name=name, attachment_type=allure.attachment_type.PNG)
             return screenshot_path
         except Exception as e:
             logger.error(f"Erreur lors de la capture d'écran: {e}")
             return None
 
     def wait_for_page_load(self, timeout=None):
-        """
-        Attend le chargement complet de la page (Web uniquement)
-
-        Args:
-            timeout: Timeout personnalisé (optionnel)
-        """
+        """Attend le chargement complet de la page."""
+        t_ms = (timeout or self.timeout) * 1000
         try:
-            wait = WebDriverWait(self.driver, timeout or self.timeout)
-            wait.until(lambda d: d.execute_script("return document.readyState") == "complete")
+            self.page.wait_for_load_state("load", timeout=t_ms)
         except Exception:
-            pass  # Ignorer pour les drivers mobiles
+            pass
 
     @allure.step("Vérification de l'accessibilité de la page")
     def check_accessibility(self):
         """
-        Vérifie l'accessibilité de la page courante (WCAG 2.1)
+        Vérifie l'accessibilité de la page courante (WCAG 2.1) via axe-core.
 
         Returns:
-            Dictionnaire avec les violations trouvées
+            Liste des violations trouvées
         """
         try:
-            from axe_selenium_python import Axe
-            axe = Axe(self.driver)
-            axe.inject()
-            results = axe.run()
-            return results.get('violations', [])
+            from axe_playwright_python.sync_playwright import Axe
+            results = Axe().run(self.page)
+            return results.violations if hasattr(results, 'violations') else []
         except Exception as e:
             logger.warning(f"Vérification accessibilité impossible: {e}")
             return []

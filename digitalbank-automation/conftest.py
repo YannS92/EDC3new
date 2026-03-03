@@ -4,12 +4,10 @@ Ce fichier contient les fixtures et hooks globaux pour les tests
 """
 
 import os
-import platform
 import pytest
 import yaml
 import allure
 from datetime import datetime
-from selenium import webdriver as selenium_webdriver
 from dotenv import load_dotenv
 
 # Charger les variables d'environnement
@@ -38,24 +36,12 @@ def pytest_addoption(parser):
         help="Environnement de test: dev, int, uat, preprod",
     )
     parser.addoption(
-        "--headless",
-        action="store_true",
-        default=False,
-        help="Exécuter en mode headless (web uniquement)",
-    )
-    parser.addoption(
         "--viewport",
         action="store",
         default="desktop",
         help="Résolution: desktop (défaut), mobile, tablet",
     )
-    parser.addoption(
-        "--browser",
-        action="store",
-        default="chromium",
-        choices=["chromium", "firefox", "webkit"],
-        help="Navigateur: chromium (défaut), firefox, webkit (macOS uniquement)",
-    )
+    # --browser et --headed sont gérés nativement par pytest-playwright
 
 
 @pytest.fixture(scope="session")
@@ -104,56 +90,23 @@ def get_viewport_size(viewport):
     return sizes.get(viewport, (1920, 1080))  # desktop par défaut
 
 
+@pytest.fixture
+def browser_context_args(request, browser_context_args):
+    """Surcharge le viewport de pytest-playwright via --viewport"""
+    width, height = get_viewport_size(request.config.getoption("--viewport"))
+    return {**browser_context_args, "viewport": {"width": width, "height": height}}
+
+
 @pytest.fixture(scope="function")
-def web_driver(request, environment):
+def web_driver(page, environment):
     """
-    Fixture pour le driver Selenium (web)
-    Navigateur sélectionnable via --browser: chromium (défaut), firefox, webkit
-    Mode headless activable via --headless
+    Fixture principale (web) — wraps la page pytest-playwright.
+    Navigateur : --browser chromium|firefox|webkit (headless par défaut, --headed pour GUI)
+    Viewport   : --viewport desktop|mobile|tablet
     """
-    headless = request.config.getoption("--headless")
-    viewport = request.config.getoption("--viewport")
-    browser = request.config.getoption("--browser")
-    width, height = get_viewport_size(viewport)
-
-    if browser == "chromium":
-        options = selenium_webdriver.ChromeOptions()
-        if headless:
-            options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument(f"--window-size={width},{height}")
-        driver = selenium_webdriver.Chrome(options=options)
-
-    elif browser == "firefox":
-        options = selenium_webdriver.FirefoxOptions()
-        if headless:
-            options.add_argument("--headless")
-        options.add_argument(f"--width={width}")
-        options.add_argument(f"--height={height}")
-        driver = selenium_webdriver.Firefox(options=options)
-
-    elif browser == "webkit":
-        if platform.system() != "Darwin":
-            raise pytest.UsageError(
-                "webkit (Safari) n'est disponible que sur macOS. "
-                "Utilisez --browser=chromium ou --browser=firefox."
-            )
-        if headless:
-            raise pytest.UsageError("Safari ne supporte pas le mode headless.")
-        driver = selenium_webdriver.Safari()
-        driver.set_window_size(width, height)
-
-    driver.implicitly_wait(environment.get("implicit_wait", 10))
-
-    # URL de base : variable d'environnement > config
     base_url = os.getenv("BASE_URL", environment["base_url"])
-    driver.get(base_url)
-
-    yield driver
-
-    driver.quit()
+    page.goto(base_url)
+    yield page
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -219,7 +172,7 @@ def screenshot_on_failure(request):
         os.makedirs(screenshot_dir, exist_ok=True)
         screenshot_path = os.path.join(screenshot_dir, f"{test_name}_{timestamp}.png")
         try:
-            driver.save_screenshot(screenshot_path)
+            page.screenshot(path=screenshot_path)
             with open(screenshot_path, "rb") as f:
                 allure.attach(
                     f.read(),
@@ -314,7 +267,7 @@ def pytest_bdd_step_error(
 
     if driver:
         try:
-            screenshot = driver.get_screenshot_as_png()
+            screenshot = driver.screenshot()
             allure.attach(
                 screenshot,
                 name=f"Erreur - {step.name}",
