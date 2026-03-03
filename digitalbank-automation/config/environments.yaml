@@ -16,7 +16,7 @@ environments:
   dev:
     name: "Développement (local)"
     # Serveur local
-    base_url: "http://localhost:8080/digitalbank/"
+    base_url: "http://localhost:8080/"
     # Pas d'API réelle en local (appli simulée). Laisse vide ou commente si ton code le permet.
     api_url: ""
     database:
