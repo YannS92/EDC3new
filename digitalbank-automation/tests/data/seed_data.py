@@ -5,7 +5,6 @@ Peut être utilisé en ligne de commande ou via les hooks pytest
 
 import argparse
 import sys
-from typing import Optional
 
 from tests.data.database import get_db, DatabaseManager
 from tests.data.data_manager import TestDataManager

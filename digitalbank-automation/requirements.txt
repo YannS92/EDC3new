@@ -6,13 +6,8 @@ allure-pytest==2.13.2
 pytest-bdd==7.0.1
 pytest-rerunfailures==16.1
 
-# Automatisation Mobile/Web
-appium-python-client==3.1.0
+# Automatisation Web
 selenium==4.16.0
-
-# Tests API
-requests==2.31.0
-jsonschema==4.21.0
 
 # Gestion des données
 Faker==22.0.0
@@ -23,9 +18,3 @@ PyYAML==6.0.1
 # Accessibilité
 axe-selenium-python==2.1.6
 
-# Utilitaires
-python-dateutil==2.8.2
-cryptography==41.0.7
-
-# Reporting
-tabulate==0.9.0

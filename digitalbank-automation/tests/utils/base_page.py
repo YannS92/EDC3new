@@ -5,7 +5,7 @@ Fournit les méthodes communes à toutes les pages
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 import allure
 import logging
 import os
