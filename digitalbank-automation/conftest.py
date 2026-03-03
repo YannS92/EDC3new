@@ -198,6 +198,16 @@ def pytest_configure(config):
     os.makedirs("reports/screenshots", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
 
+    # Traçabilité de la configuration au démarrage
+    env_vars = ["ENV", "BROWSER", "VIEWPORT", "PARALLEL_PROCESSES", "RERUN_NB", "RERUN_DELAY", "REPORT_DIR"]
+    print("\n" + "═" * 60)
+    print("  CONFIGURATION DE LA SESSION DE TESTS")
+    print("═" * 60)
+    for var in env_vars:
+        value = os.getenv(var, "(non défini)")
+        print(f"  {var:<22} = {value}")
+    print("═" * 60 + "\n")
+
     # Ajouter des marqueurs personnalisés
     config.addinivalue_line("markers", "smoke: Tests de vérification rapide")
     config.addinivalue_line("markers", "regression: Tests de régression")
