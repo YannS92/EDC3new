@@ -62,6 +62,13 @@ def pytest_addoption(parser):
         default="desktop",
         help="Résolution: desktop, mobile, tablet",
     )
+    parser.addoption(
+        "--browser",
+        action="store",
+        default="chromium",
+        choices=["chromium", "firefox", "webkit"],
+        help="Navigateur: chromium (défaut), firefox, webkit (macOS uniquement)",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -148,21 +155,44 @@ def mobile_driver(request, environment):
 def web_driver(request, environment):
     """
     Fixture pour le driver Selenium (web)
-    Utilise Chrome en mode headless si --headless est spécifié
+    Navigateur sélectionnable via --browser: chromium (défaut), firefox, webkit
+    Mode headless activable via --headless
     """
     headless = request.config.getoption("--headless")
     viewport = request.config.getoption("--viewport")
+    browser = request.config.getoption("--browser")
     width, height = get_viewport_size(viewport)
 
-    options = selenium_webdriver.ChromeOptions()
-    if headless:
-        options.add_argument("--headless=new")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument(f"--window-size={width},{height}")
+    if browser == "chromium":
+        options = selenium_webdriver.ChromeOptions()
+        if headless:
+            options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument(f"--window-size={width},{height}")
+        driver = selenium_webdriver.Chrome(options=options)
 
-    driver = selenium_webdriver.Chrome(options=options)
+    elif browser == "firefox":
+        options = selenium_webdriver.FirefoxOptions()
+        if headless:
+            options.add_argument("--headless")
+        options.add_argument(f"--width={width}")
+        options.add_argument(f"--height={height}")
+        driver = selenium_webdriver.Firefox(options=options)
+
+    elif browser == "webkit":
+        import platform
+        if platform.system() != "Darwin":
+            raise pytest.UsageError(
+                "webkit (Safari) n'est disponible que sur macOS. "
+                "Utilisez --browser=chromium ou --browser=firefox."
+            )
+        if headless:
+            raise pytest.UsageError("Safari ne supporte pas le mode headless.")
+        driver = selenium_webdriver.Safari()
+        driver.set_window_size(width, height)
+
     driver.implicitly_wait(environment.get("implicit_wait", 10))
 
     # URL de base : variable d'environnement > config
