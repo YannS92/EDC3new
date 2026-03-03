@@ -3,7 +3,6 @@ Modèles SQLAlchemy pour les données de test DigitalBank
 """
 
 from datetime import datetime
-from typing import Optional
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import DeclarativeBase, relationship
 
