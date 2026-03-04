@@ -405,7 +405,7 @@ Hooks pytest integres dans `conftest.py` :
 Le code source est versionne avec **Git** et heberge sur **GitHub** :
 - Branche `main` : code stable, protegee (merge via PR uniquement)
 - Branche `develop` : integration continue
-- Branches feature : `feature/sprint-X-description`
+- Branches sprint : `sprint-1`, `sprint-2`, `sprint-3` (une branche par sprint)
 
 ### 10.2 Versions et Releases
 
