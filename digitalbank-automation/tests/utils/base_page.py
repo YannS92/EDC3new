@@ -157,8 +157,9 @@ class BasePage:
             timeout: Timeout en secondes (optionnel)
         """
         t_ms = (timeout or self.timeout) * 1000
+        js_selector = selector.replace("'", '"')
         self.page.wait_for_function(
-            f"!document.querySelector('{selector}')?.classList.contains('hidden')",
+            f"!document.querySelector('{js_selector}')?.classList.contains('hidden')",
             timeout=t_ms,
         )
 
