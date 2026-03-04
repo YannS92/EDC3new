@@ -105,7 +105,8 @@ def web_driver(page, environment):
     Viewport   : --viewport desktop|mobile|tablet
     """
     base_url = os.getenv("BASE_URL", environment["base_url"])
-    page.goto(base_url)
+    page.set_default_navigation_timeout(60000)
+    page.goto(base_url, wait_until="domcontentloaded")
     yield page
 
 
