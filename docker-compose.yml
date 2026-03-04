@@ -44,7 +44,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -67,7 +66,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -90,7 +88,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -116,7 +113,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -139,7 +135,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -162,7 +157,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -188,7 +182,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -211,7 +204,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 
@@ -234,7 +226,6 @@ services:
         condition: service_healthy
     volumes:
       - ./digitalbank-automation/reports:/app/reports
-      - ./digitalbank-automation/tests/data/db:/app/tests/data/db
     networks:
       - digitalbank-net
 

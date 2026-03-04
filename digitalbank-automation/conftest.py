@@ -172,7 +172,7 @@ def screenshot_on_failure(request):
         os.makedirs(screenshot_dir, exist_ok=True)
         screenshot_path = os.path.join(screenshot_dir, f"{test_name}_{timestamp}.png")
         try:
-            page.screenshot(path=screenshot_path)
+            driver.screenshot(path=screenshot_path)
             with open(screenshot_path, "rb") as f:
                 allure.attach(
                     f.read(),
@@ -199,7 +199,15 @@ def pytest_configure(config):
     os.makedirs("logs", exist_ok=True)
 
     # Traçabilité de la configuration au démarrage
-    env_vars = ["ENV", "BROWSER", "VIEWPORT", "PARALLEL_PROCESSES", "RERUN_NB", "RERUN_DELAY", "REPORT_DIR"]
+    env_vars = [
+        "ENV",
+        "BROWSER",
+        "VIEWPORT",
+        "PARALLEL_PROCESSES",
+        "RERUN_NB",
+        "RERUN_DELAY",
+        "REPORT_DIR",
+    ]
     print("\n" + "═" * 60)
     print("  CONFIGURATION DE LA SESSION DE TESTS")
     print("═" * 60)
