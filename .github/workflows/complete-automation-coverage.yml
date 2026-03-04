@@ -12,9 +12,9 @@ on:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
-  # JOB 1 : Tests Smoke (bloquants)
+  # Exécution des tests
   # ═══════════════════════════════════════════════════════════════
-  smoke-tests:
+  tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -25,9 +25,8 @@ jobs:
       - name: Build images Docker
         run: docker compose build
 
-      - name: Run smoke tests
-        run: |
-          docker compose run --rm tests tests/ -v --headless -m smoke --html=reports/smoke-report.html --self-contained-html
+      - name: Run Tests
+        run: docker compose up --build
 
       - name: Stop containers
         if: always()
@@ -37,80 +36,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-report
-          path: digitalbank-automation/reports/smoke-report.html
+          name: tests-reports
+          path: digitalbank-automation/reports
           retention-days: 30
 
   # ═══════════════════════════════════════════════════════════════
-  # JOB 2 : Tests Regression (parallelises, apres smoke)
-  # ═══════════════════════════════════════════════════════════════
-  regression-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: smoke-tests
-
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Build images Docker
-        run: docker compose build
-
-      - name: Run regression tests (parallelises)
-        run: |
-          docker compose run --rm tests tests/ -v --headless -n auto --html=reports/regression-report.html --self-contained-html --alluredir=reports/allure-results
-
-      - name: Stop containers
-        if: always()
-        run: docker compose down -v
-
-      - name: Upload regression report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-report
-          path: |
-            digitalbank-automation/reports/regression-report.html
-            digitalbank-automation/reports/allure-results/
-          retention-days: 30
-
-  # ═══════════════════════════════════════════════════════════════
-  # JOB 3 : Tests Accessibilite (en parallele de regression)
-  # ═══════════════════════════════════════════════════════════════
-  accessibility-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: smoke-tests
-
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Build images Docker
-        run: docker compose build
-
-      - name: Run accessibility tests
-        run: |
-          docker compose run --rm tests tests/ -v --headless -m accessibility --html=reports/accessibility-report.html --self-contained-html
-
-      - name: Stop containers
-        if: always()
-        run: docker compose down -v
-
-      - name: Upload accessibility report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: accessibility-report
-          path: digitalbank-automation/reports/accessibility-report.html
-          retention-days: 30
-
-  # ═══════════════════════════════════════════════════════════════
-  # JOB 4 : Publication des resultats
+  # Publication des résultats
   # ═══════════════════════════════════════════════════════════════
   publish-results:
     runs-on: ubuntu-latest
-    needs: [regression-tests, accessibility-tests]
+    needs: tests
     if: always()
 
     steps:
@@ -124,23 +59,21 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const smokeResult = '${{ needs.smoke-tests.result }}';
-            const regressionResult = '${{ needs.regression-tests.result }}';
-            const accessibilityResult = '${{ needs.accessibility-tests.result }}';
+            const testsResult = '${{ needs.tests.result }}';
 
-            const statusIcon = (status) => status === 'success' ? '✅' : status === 'failure' ? '❌' : '⚠️';
+            const statusIcon = (status) =>
+              status === 'success' ? '✅' :
+              status === 'failure' ? '❌' : '⚠️';
 
-            const body = `## Resultats des Tests Automatises
+            const body = `## Résultats des Tests Automatisés
 
             | Suite | Statut |
             |-------|--------|
-            | Smoke Tests | ${statusIcon(smokeResult)} ${smokeResult} |
-            | Regression Tests | ${statusIcon(regressionResult)} ${regressionResult} |
-            | Accessibility Tests | ${statusIcon(accessibilityResult)} ${accessibilityResult} |
+            | Tests Globaux | ${statusIcon(testsResult)} ${testsResult} |
 
-            📊 Les rapports HTML sont disponibles dans les **Artifacts** de ce workflow.
+            📊 Les rapports HTML sont disponibles dans les **Artifacts**.
 
-            🤖 _Genere automatiquement par le pipeline CI/CD DigitalBank_`;
+            🤖 _Généré automatiquement par le pipeline CI/CD DigitalBank_`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
