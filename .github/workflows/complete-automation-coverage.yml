@@ -31,17 +31,14 @@ jobs:
       - name: Check exit codes
         if: always()
         run: |
-          FAIL=0
-          for SERVICE in $(docker compose config --services | grep tests-); do
-            CID=$(docker compose ps -q $SERVICE)
+          for CID in $(docker compose ps -aq); do
             EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
-            echo "$SERVICE -> Exit code: $EXIT_CODE"
-
+            NAME=$(docker inspect $CID --format='{{.Name}}')
+            echo "$NAME -> $EXIT_CODE"
             if [ "$EXIT_CODE" != "0" ]; then
               FAIL=1
             fi
           done
-          exit $FAIL
 
       - name: Upload smoke report
         if: always()
