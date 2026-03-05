@@ -13,7 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ENV=dev \
     BROWSER=chromium \
     VIEWPORT=desktop \
-    PYTEST_TAGS="" \
+    PYTEST_MARKERS="" \
     REPORT_DIR=reports
 
 COPY requirements.txt .
@@ -21,11 +21,11 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT [ \
+ENTRYPOINT [\
   "sh", "-c", "\
-  TAGS_ARG=\"\"; \
-  if [ -n \"${PYTEST_TAGS}\" ]; then \
-    TAGS_ARG=\"-m ${PYTEST_TAGS}\"; \
+  MARKERS_ARG=\"\"; \
+  if [ -n \"${PYTEST_MARKERS}\" ]; then \
+    MARKERS_ARG=\"-m ${PYTEST_MARKERS}\"; \
   fi; \
   CMD=\"pytest tests/ -v \
     -n ${PARALLEL_PROCESSES} \
@@ -35,7 +35,7 @@ ENTRYPOINT [ \
     --browser ${BROWSER} \
     --viewport ${VIEWPORT} \
     --alluredir ${REPORT_DIR}/allure-results \
-    ${TAGS_ARG} \
+    ${MARKERS_ARG} \
     --html ${REPORT_DIR}/report-${BROWSER}-${VIEWPORT}.html \
     --self-contained-html\"; \
   echo \"Running: ${CMD}\"; \
