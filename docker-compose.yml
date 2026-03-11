@@ -47,10 +47,10 @@ services:
     networks:
       - digitalbank-net
 
-  tests-webkit-mobile:
+  tests-webkit-tablet:
     environment:
       - BROWSER=webkit
-      - VIEWPORT=mobile
+      - VIEWPORT=tablet
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
@@ -60,7 +60,29 @@ services:
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
-    container_name: digitalbank-tests-webkit-mobile
+    container_name: digitalbank-tests-webkit-tablet
+    depends_on:
+      webapp:
+        condition: service_healthy
+    volumes:
+      - ./digitalbank-automation/reports:/app/reports
+    networks:
+      - digitalbank-net
+
+  tests-firefox-desktop:
+    environment:
+      - BROWSER=firefox
+      - VIEWPORT=desktop
+      - PYTHONPATH=/app
+      - ENV=docker
+      - PARALLEL_PROCESSES=auto
+      - REPORT_DIR=reports
+      - RERUN_NB=1
+      - RERUN_DELAY=2
+    build:
+      context: ./digitalbank-automation
+      dockerfile: Dockerfile
+    container_name: digitalbank-tests-firefox-desktop
     depends_on:
       webapp:
         condition: service_healthy
@@ -92,10 +114,10 @@ services:
     networks:
       - digitalbank-net
 
-  tests-webkit-desktop:
+  tests-webkit-mobile:
     environment:
       - BROWSER=webkit
-      - VIEWPORT=desktop
+      - VIEWPORT=mobile
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
@@ -106,30 +128,7 @@ services:
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
-    container_name: digitalbank-tests-webkit-desktop
-    depends_on:
-      webapp:
-        condition: service_healthy
-    volumes:
-      - ./digitalbank-automation/reports:/app/reports
-    networks:
-      - digitalbank-net
-
-  tests-firefox-desktop:
-    environment:
-      - BROWSER=firefox
-      - VIEWPORT=desktop
-      - PYTHONPATH=/app
-      - ENV=docker
-      - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="regression or smoke or critical"
-      - REPORT_DIR=reports
-      - RERUN_NB=1
-      - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
-    container_name: digitalbank-tests-firefox-desktop
+    container_name: digitalbank-tests-webkit-mobile
     depends_on:
       webapp:
         condition: service_healthy
@@ -161,10 +160,10 @@ services:
     networks:
       - digitalbank-net
 
-  tests-webkit-tablet:
+  tests-webkit-desktop:
     environment:
       - BROWSER=webkit
-      - VIEWPORT=tablet
+      - VIEWPORT=desktop
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
@@ -175,7 +174,7 @@ services:
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
-    container_name: digitalbank-tests-webkit-tablet
+    container_name: digitalbank-tests-webkit-desktop
     depends_on:
       webapp:
         condition: service_healthy
