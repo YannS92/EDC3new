@@ -28,23 +28,23 @@ jobs:
       - name: Run Chromium Mobile
         run: docker compose run --rm tests-chromium-mobile
 
-      - name: Run Webkit Mobile
-        run: docker compose run --rm tests-webkit-mobile
+      - name: Run Firefox Desktop
+        run: docker compose run --rm tests-firefox-desktop
+
+      - name: Run Webkit Tablet
+        run: docker compose run --rm tests-webkit-tablet
 
       - name: Run Chromium Desktop
         run: docker compose run --rm tests-chromium-desktop
 
+      - name: Run Webkit Mobile
+        run: docker compose run --rm tests-webkit-mobile
+
       - name: Run Webkit Desktop
         run: docker compose run --rm tests-webkit-desktop
 
-      - name: Run Firefox Desktop
-        run: docker compose run --rm tests-firefox-desktop
-
       - name: Run Chromium Tablet
         run: docker compose run --rm tests-chromium-tablet
-
-      - name: Run Webkit Tablet
-        run: docker compose run --rm tests-webkit-tablet
 
       - name: Run Firefox Mobile
         run: docker compose run --rm tests-firefox-mobile

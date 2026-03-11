@@ -30,13 +30,37 @@ Ce document definit la strategie d'automatisation des tests pour l'application b
 
 ### 2.3 Couverture par Browser et Viewport
 
-L'execution couvre **9 configurations** en parallele (3 navigateurs x 3 viewports) :
+L'execution couvre **9 configurations** en parallele (3 navigateurs x 3 viewports).
+Ces 9 configurations ont d'abord été ogranisées en fréquence d'utilisation sur applications similaire, dans l'ordre décroissant d'utilisation :
 
-| Navigateur | Mobile (390x844)   | Tablet (768x1024)  | Desktop (1920x1080) |
-| ---------- | ------------------ | ------------------ | ------------------- |
-| Chromium   | smoke + regression | smoke + regression | smoke + regression  |
-| Firefox    | smoke              | smoke              | smoke + regression  |
-| WebKit     | smoke              | smoke              | smoke + regression  |
+- chromium mobile
+- wekbit mobile
+- chromium desktop
+- webkit desktop
+- firefox desktop
+- chromium tablet
+- webkit tablet
+- firefox mobile
+- firefox tablet
+
+Cet ordre va nous permettre, dans une approche d'éco-conception, de diminuer les besoins en puissance de calcul en diminuant le nombre de cas de tests exécutés par les configurations les moins utilisées.
+
+On va déterminer 4 niveaux de tests qui vont à cette étape du projet utiliser un mélange de tags technico-fonctionnel, deux problématiques idéalement dissociées au long terme mais suffisant à cette étape du projet, dans l'ordre décroissant du nombre de cas de tests associés :
+
+- tous les cas de tests
+- regression + critical + smoke
+- critical + smoke
+- smoke
+
+Ces différentes métriques nous ont ainsi permisent d'organiser le tableau suivant:
+
+| Navigateur | Mobile (390x844)              | Desktop (1920x1080)           | Tablet (768x1024) |
+| ---------- | ----------------------------- | ----------------------------- | ----------------- |
+| Chromium   | tous                          | regression + critical + smoke | critical + smoke  |
+| Firefox    | smoke                         | tous                          | smoke             |
+| WebKit     | regression + critical + smoke | critical + smoke              | tous              |
+
+On remarque que la distribution des niveaux ne suit pas exactement la fréquence d'utilisation, la décision a été prise de faire au moins une exécution complète dans chaque technologie et chaque breakpoint/taille d'écran, ce qui permet notamment à certain tests spécifiques commes les tests d'acessibilité de bien remplir leur rôle.
 
 ---
 
