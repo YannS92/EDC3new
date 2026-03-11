@@ -10,15 +10,15 @@ Ce document definit la strategie d'automatisation des tests pour l'application b
 
 ### 2.1 Phases de Tests Concernees
 
-| Phase | Description | Automatisation | Statut |
-|-------|-------------|----------------|--------|
-| Tests Fonctionnels | Validation des parcours utilisateur | Oui (Playwright + pytest) | Implemente |
-| Tests BDD | Scenarios Gherkin en francais | Oui (pytest-bdd) | Implemente |
-| Tests de Regression | Verification de non-regression | Oui (Suite complete) | Implemente |
-| Tests d'Accessibilite | Conformite WCAG 2.1 | Oui (axe-core) | Implemente |
-| Tests Unitaires | Validation des composants individuels | Hors perimetre | - |
-| Tests de Performance | Charge et temps de reponse | Prevus (Sprint 6) | Non implemente |
-| Tests de Securite | Vulnerabilites OWASP | Prevus (Sprint futur) | Non implemente |
+| Phase                 | Description                           | Automatisation            | Statut         |
+| --------------------- | ------------------------------------- | ------------------------- | -------------- |
+| Tests Fonctionnels    | Validation des parcours utilisateur   | Oui (Playwright + pytest) | Implemente     |
+| Tests BDD             | Scenarios Gherkin en francais         | Oui (pytest-bdd)          | Implemente     |
+| Tests de Regression   | Verification de non-regression        | Oui (Suite complete)      | Implemente     |
+| Tests d'Accessibilite | Conformite WCAG 2.1                   | Oui (axe-core)            | Implemente     |
+| Tests Unitaires       | Validation des composants individuels | Hors perimetre            | -              |
+| Tests de Performance  | Charge et temps de reponse            | Prevus (Sprint 6)         | Non implemente |
+| Tests de Securite     | Vulnerabilites OWASP                  | Prevus (Sprint futur)     | Non implemente |
 
 ### 2.2 Types de Tests Automatises
 
@@ -32,11 +32,11 @@ Ce document definit la strategie d'automatisation des tests pour l'application b
 
 L'execution couvre **9 configurations** en parallele (3 navigateurs x 3 viewports) :
 
-| Navigateur | Mobile (390x844) | Tablet (768x1024) | Desktop (1920x1080) |
-|------------|-----------------|-------------------|---------------------|
-| Chromium   | smoke + regression | smoke + regression | smoke + regression |
-| Firefox    | smoke           | smoke             | smoke + regression |
-| WebKit     | smoke           | smoke             | smoke + regression |
+| Navigateur | Mobile (390x844)   | Tablet (768x1024)  | Desktop (1920x1080) |
+| ---------- | ------------------ | ------------------ | ------------------- |
+| Chromium   | smoke + regression | smoke + regression | smoke + regression  |
+| Firefox    | smoke              | smoke              | smoke + regression  |
+| WebKit     | smoke              | smoke              | smoke + regression  |
 
 ---
 
@@ -46,26 +46,29 @@ L'execution couvre **9 configurations** en parallele (3 navigateurs x 3 viewport
 
 #### Organisation retenue : Agile (sprints de 2 semaines)
 
-| Critere | Agile | Cycle en V |
-|---------|-------|-----------|
-| **Perimetre** | Evolutif, incrementiel | Fixe, defini en debut de projet |
-| **Integration des tests** | Continue, integree dans chaque sprint | Tardive, en phase de recette |
-| **Feedback** | Rapide (a chaque sprint) | Lent (decouverte des bugs en fin de cycle) |
-| **Maintenance scripts** | Constante (evolutions frequentes) | Allégée (perimetre stable) |
-| **Collaboration** | Dev + QA + PO ensemble | Cloisonnement par phase |
+| Critere                   | Agile                                 | Cycle en V                                 |
+| ------------------------- | ------------------------------------- | ------------------------------------------ |
+| **Perimetre**             | Evolutif, incrementiel                | Fixe, defini en debut de projet            |
+| **Integration des tests** | Continue, integree dans chaque sprint | Tardive, en phase de recette               |
+| **Feedback**              | Rapide (a chaque sprint)              | Lent (decouverte des bugs en fin de cycle) |
+| **Maintenance scripts**   | Constante (evolutions frequentes)     | Allégée (perimetre stable)                 |
+| **Collaboration**         | Dev + QA + PO ensemble                | Cloisonnement par phase                    |
 
 **Avantages de l'Agile pour l'automatisation :**
+
 - Feedback immediat sur chaque feature developpee
 - Automatisation progressive et alignee sur les livraisons
 - Identification precoce des regressions (shift left natif)
 - Adaptabilite rapide aux changements de specifications
 
 **Inconvenients de l'Agile pour l'automatisation :**
+
 - Maintenance continue des scripts au rythme des evolutions
 - Risque de dette technique si les scripts ne sont pas refactores
 - Necessite une bonne discipline de tests (conventions, review)
 
 **Pourquoi pas le Cycle en V :**
+
 - DigitalBank est une application evoluant par sprints
 - Les tests tardifs du Cycle en V augmentent le cout des corrections
 - L'approche Agile permet de valider chaque increment avant integration
@@ -76,12 +79,12 @@ Le principe de **shift left** consiste a avancer les activites de test le plus t
 
 **Mise en oeuvre dans ce projet :**
 
-| Pratique | Implementation |
-|----------|---------------|
-| Tests executes au commit | GitHub Actions declenche les smoke tests sur chaque push |
-| Tests bloquants sur PR | Les tests critiques doivent passer avant tout merge sur `main` |
-| BDD avant developpement | Les scenarios Gherkin sont ecrits en amont, servant de specification vivante |
-| Tests smoke < 1 min | Feedback ultra-rapide pour le developpeur |
+| Pratique                  | Implementation                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| Tests executes au commit  | GitHub Actions declenche les smoke tests sur chaque push                       |
+| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 |
+| BDD avant developpement   | Les scenarios Gherkin sont ecrits en amont, servant de specification vivante   |
+| Tests smoke < 1 min       | Feedback ultra-rapide pour le developpeur                                      |
 | `data-testid` sur l'appli | Les developpeurs integrent les selecteurs de test a la creation des composants |
 
 ### 3.3 BDD - Behavior Driven Development
@@ -97,6 +100,7 @@ Scenario: Connexion reussie avec identifiants valides
 ```
 
 **Benefices :**
+
 - Specification executable (les scenarios servent a la fois de specs et de tests)
 - Comprehensible par des non-techniciens
 - Double couverture : chaque scenario BDD est complement des tests fonctionnels classiques
@@ -107,13 +111,13 @@ Scenario: Connexion reussie avec identifiants valides
 
 ### 4.1 Architecture des Environnements
 
-| Environnement | Usage | Donnees | Frequence d'execution |
-|---------------|-------|---------|----------------------|
-| Docker | Execution CI/CD et locale | Donnees synthetiques (SQLite) | A chaque push/PR |
-| DEV | Developpement local | Donnees mockees (SQLite) | A chaque commit |
-| INT | Tests d'integration | Donnees synthetiques | Quotidien |
-| UAT | Tests fonctionnels et acceptance | Donnees anonymisees | Par sprint |
-| PREPROD | Validation pre-production | Clone production | Hebdomadaire |
+| Environnement | Usage                            | Donnees                       | Frequence d'execution |
+| ------------- | -------------------------------- | ----------------------------- | --------------------- |
+| Docker        | Execution CI/CD et locale        | Donnees synthetiques (SQLite) | A chaque push/PR      |
+| DEV           | Developpement local              | Donnees mockees (SQLite)      | A chaque commit       |
+| INT           | Tests d'integration              | Donnees synthetiques          | Quotidien             |
+| UAT           | Tests fonctionnels et acceptance | Donnees anonymisees           | Par sprint            |
+| PREPROD       | Validation pre-production        | Clone production              | Hebdomadaire          |
 
 ### 4.2 Configuration des Environnements
 
@@ -122,7 +126,7 @@ Fichier : `config/environments.yaml`
 ```yaml
 environments:
   docker:
-    base_url: "http://webapp/"             # Conteneur nginx interne
+    base_url: "http://webapp/" # Conteneur nginx interne
     timeout: 60
 
   dev:
@@ -151,22 +155,22 @@ Parametrable via `--env` : `pytest tests/ --env=uat`
 
 ### 5.1 Stack Technique Retenue
 
-| Categorie | Outil | Version | Justification |
-|-----------|-------|---------|---------------|
-| **Framework Web** | Playwright | 1.42.0 | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, headless Linux sans config |
-| **Langage** | Python | 3.10 | Lisibilite, bibliotheques riches, courbe d'apprentissage faible |
-| **Framework Test** | pytest | 8.0 | Fixtures, parametrization, plugins, markers |
-| **BDD** | pytest-bdd | 7.0 | Gherkin natif en francais, integration pytest |
-| **Tests Accessibilite** | axe-playwright-python | latest | Reference WCAG 2.1, integration Playwright |
-| **Reporting** | pytest-html + Allure | 4.1 / 2.13 | Rapport HTML autonome + donnees Allure pour dashboards |
-| **CI/CD** | GitHub Actions + Docker | - | Integration native GitHub, containerisation reproductible |
-| **Gestion Donnees** | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Generation donnees realistes, ORM, isolation par env |
-| **Containerisation** | Docker Compose | - | Orchestration webapp (nginx) + 9 conteneurs de test |
-| **Parallélisation** | pytest-xdist | 3.5 | Execution en parallele des tests au sein d'un conteneur |
+| Categorie               | Outil                       | Version    | Justification                                                                                          |
+| ----------------------- | --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| **Framework Web**       | Playwright                  | 1.42.0     | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, headless Linux sans config |
+| **Langage**             | Python                      | 3.10       | Lisibilite, bibliotheques riches, courbe d'apprentissage faible                                        |
+| **Framework Test**      | pytest                      | 8.0        | Fixtures, parametrization, plugins, markers                                                            |
+| **BDD**                 | pytest-bdd                  | 7.0        | Gherkin natif en francais, integration pytest                                                          |
+| **Tests Accessibilite** | axe-playwright-python       | latest     | Reference WCAG 2.1, integration Playwright                                                             |
+| **Reporting**           | pytest-html + Allure        | 4.1 / 2.13 | Rapport HTML autonome + donnees Allure pour dashboards                                                 |
+| **CI/CD**               | GitHub Actions + Docker     | -          | Integration native GitHub, containerisation reproductible                                              |
+| **Gestion Donnees**     | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Generation donnees realistes, ORM, isolation par env                                                   |
+| **Containerisation**    | Docker Compose              | -          | Orchestration webapp (nginx) + 9 conteneurs de test                                                    |
+| **Parallélisation**     | pytest-xdist                | 3.5        | Execution en parallele des tests au sein d'un conteneur                                                |
 
 ### 5.2 Architecture du Framework
 
-```
+```txt
 digitalbank-automation/
 ├── config/
 │   ├── environments.yaml       # Configuration multi-environnement
@@ -208,6 +212,7 @@ digitalbank-automation/
 ### 5.3 Pattern Page Object Model (POM)
 
 Toutes les pages heritent de `BasePage` qui fournit :
+
 - Attentes implicites Playwright (`locator.wait_for()`, `wait_for_function()`)
 - Actions communes (`click`, `enter_text`, `get_text`)
 - Verification d'accessibilite via axe-core (`check_accessibility`)
@@ -222,36 +227,36 @@ Les locators utilisent des selecteurs CSS avec attributs `data-testid` pour la s
 
 ### 6.1 Roadmap par Sprint
 
-| Sprint | Semaines | Livrables | Statut |
-|--------|----------|-----------|--------|
-| Sprint 1 | S1-S2 | Framework de base, Page Objects, tests authentification | Termine |
-| Sprint 2 | S3-S4 | Tests securite, BDD (Gherkin), gestion donnees | Termine |
-| Sprint 3 | S5-S6 | Migration Playwright, Docker 9 conteneurs, CI/CD GitHub Actions | Termine |
-| Sprint 4 | S7-S8 | Tests virements bancaires (Page Object pret) | A planifier |
-| Sprint 5 | S9-S10 | Tests paiement factures (Page Object pret) | A planifier |
-| Sprint 6 | S11-S12 | Tests performance, optimisation CI/CD | A planifier |
+| Sprint   | Semaines | Livrables                                                       | Statut      |
+| -------- | -------- | --------------------------------------------------------------- | ----------- |
+| Sprint 1 | S1-S2    | Framework de base, Page Objects, tests authentification         | Termine     |
+| Sprint 2 | S3-S4    | Tests securite, BDD (Gherkin), gestion donnees                  | Termine     |
+| Sprint 3 | S5-S6    | Migration Playwright, Docker 9 conteneurs, CI/CD GitHub Actions | Termine     |
+| Sprint 4 | S7-S8    | Tests virements bancaires (Page Object pret)                    | A planifier |
+| Sprint 5 | S9-S10   | Tests paiement factures (Page Object pret)                      | A planifier |
+| Sprint 6 | S11-S12  | Tests performance, optimisation CI/CD                           | A planifier |
 
 ### 6.2 Couverture Actuelle par Module
 
-| Module | Tests Fonctionnels | Tests BDD | Priorite | Statut |
-|--------|--------------------|-----------|----------|--------|
-| Authentification (login, 2FA, logout, reset) | 12 tests | 8 scenarios | P1 - Critique | Implemente |
-| Parametres Securite (mot de passe, 2FA, notifications) | 11 tests | 6 scenarios | P2 - Haute | Implemente |
-| Consultation Compte (solde, historique) | - | - | P1 - Critique | Page Object pret |
-| Virements Bancaires (internes, externes) | - | - | P1 - Critique | Page Object pret |
-| Paiement Factures | - | - | P2 - Haute | Page Object pret |
+| Module                                                 | Tests Fonctionnels | Tests BDD   | Priorite      | Statut           |
+| ------------------------------------------------------ | ------------------ | ----------- | ------------- | ---------------- |
+| Authentification (login, 2FA, logout, reset)           | 12 tests           | 8 scenarios | P1 - Critique | Implemente       |
+| Parametres Securite (mot de passe, 2FA, notifications) | 11 tests           | 6 scenarios | P2 - Haute    | Implemente       |
+| Consultation Compte (solde, historique)                | -                  | -           | P1 - Critique | Page Object pret |
+| Virements Bancaires (internes, externes)               | -                  | -           | P1 - Critique | Page Object pret |
+| Paiement Factures                                      | -                  | -           | P2 - Haute    | Page Object pret |
 
 **Note** : Les Page Objects `transfer_page.py`, `bills_page.py` et `dashboard_page.py` sont deja developpes et prets a recevoir des tests, permettant une montee en charge rapide lors des prochains sprints.
 
 ### 6.3 Repartition des Tests par Marker
 
-| Marker | Nombre de tests | Usage |
-|--------|-----------------|-------|
-| `@smoke` | ~11 | Verification rapide, execution a chaque push |
-| `@regression` | ~30 | Suite complete, execution quotidienne |
-| `@critical` | ~8 | Tests bloquants pour la mise en production |
-| `@accessibility` / `@wcag` | 2 | Conformite WCAG 2.1 |
-| `@xfail` | 1 | Bug connu documente (labels manquants sur les toggles) |
+| Marker                     | Nombre de tests | Usage                                                  |
+| -------------------------- | --------------- | ------------------------------------------------------ |
+| `@smoke`                   | ~11             | Verification rapide, execution a chaque push           |
+| `@regression`              | ~30             | Suite complete, execution quotidienne                  |
+| `@critical`                | ~8              | Tests bloquants pour la mise en production             |
+| `@accessibility` / `@wcag` | 2               | Conformite WCAG 2.1                                    |
+| `@xfail`                   | 1               | Bug connu documente (labels manquants sur les toggles) |
 
 ---
 
@@ -259,19 +264,20 @@ Les locators utilisent des selecteurs CSS avec attributs `data-testid` pour la s
 
 ### 7.1 Matrice de Decision
 
-Un scenario est eligible a l'automatisation s'il repond aux criteres suivants :
+Un scenario est eligible a l'automatisation s'il repond aux critères suivants :
 
-| Critere | Poids | Seuil |
-|---------|-------|-------|
-| Frequence d'execution | 30% | >= 1 fois/sprint |
-| Stabilite fonctionnelle | 25% | Pas de changement prevu sur 3 sprints |
-| Criticite metier | 20% | Bloquant ou majeur |
-| Complexite d'automatisation | 15% | Effort < 2 jours |
-| ROI | 10% | Gain temps > 50% apres 5 executions |
+| Critere                     | Poids | Seuil                                 |
+| --------------------------- | ----- | ------------------------------------- |
+| Frequence d'execution       | 30%   | >= 1 fois/sprint                      |
+| Stabilite fonctionnelle     | 25%   | Pas de changement prevu sur 3 sprints |
+| Criticite metier            | 20%   | Bloquant ou majeur                    |
+| Complexite d'automatisation | 15%   | Effort < 2 jours                      |
+| ROI                         | 10%   | Gain temps > 50% apres 5 executions   |
 
 ### 7.2 Scenarios Prioritaires
 
 **Automatises (Sprint 1-3) :**
+
 - Parcours de connexion/deconnexion (standard + 2FA)
 - Reinitialisation de mot de passe
 - Modification du mot de passe
@@ -280,12 +286,14 @@ Un scenario est eligible a l'automatisation s'il repond aux criteres suivants :
 - Verification accessibilite (WCAG 2.1)
 
 **A automatiser (Sprint 4-5) :**
+
 - Consultation du solde et historique
 - Virement simple entre comptes propres
 - Virement vers beneficiaire externe
 - Paiement de factures
 
 **Ne pas automatiser :**
+
 - Tests exploratoires
 - Scenarios a donnees sensibles reelles
 - Fonctionnalites en cours de developpement
@@ -309,19 +317,19 @@ Fichier : `.github/workflows/complete-automation-coverage.yml`
 
 Le pipeline est compose de **2 jobs** :
 
-| Job | Description | Dependance | Timeout |
-|-----|-------------|------------|---------|
-| **tests** | Build des 9 images Docker en parallele, puis execution sequentielle des 9 conteneurs de test | - | 10 min |
-| **publish-results** | Post un commentaire automatique sur les PR/commits avec tableau de synthese et lien vers les artifacts | tests | - |
+| Job                 | Description                                                                                            | Dependance | Timeout |
+| ------------------- | ------------------------------------------------------------------------------------------------------ | ---------- | ------- |
+| **tests**           | Build des 9 images Docker en parallele, puis execution sequentielle des 9 conteneurs de test           | -          | 10 min  |
+| **publish-results** | Post un commentaire automatique sur les PR/commits avec tableau de synthese et lien vers les artifacts | tests      | -       |
 
 ### 8.2 Declencheurs
 
-| Evenement | Action |
-|-----------|--------|
-| Push sur `main` ou `develop` | Execution automatique |
-| Pull Request vers `main` | Execution automatique (bloquant) + commentaire resume |
-| Cron `0 23 * * 0-4` | Execution quotidienne a 00h00 Paris (lundi-vendredi) |
-| Manuel (`workflow_dispatch`) | Execution a la demande depuis l'interface GitHub |
+| Evenement                    | Action                                                |
+| ---------------------------- | ----------------------------------------------------- |
+| Push sur `main` ou `develop` | Execution automatique                                 |
+| Pull Request vers `main`     | Execution automatique (bloquant) + commentaire resume |
+| Cron `0 23 * * 0-4`          | Execution quotidienne a 00h00 Paris (lundi-vendredi)  |
+| Manuel (`workflow_dispatch`) | Execution a la demande depuis l'interface GitHub      |
 
 ### 8.3 Execution Docker
 
@@ -346,13 +354,13 @@ Services disponibles : `tests-chromium-mobile`, `tests-chromium-tablet`, `tests-
 
 ### 8.4 Rapports et Visibilite
 
-| Type | Emplacement | Description |
-|------|-------------|-------------|
-| pytest-html | `reports/report-{browser}-{viewport}.html` | Rapport HTML autonome par configuration |
-| Allure | `reports/allure-results/` | Donnees brutes JSON pour generation Allure |
-| Screenshots | `reports/screenshots/` | Captures automatiques uniquement en cas d'echec |
-| GitHub Artifacts | Actions > Artifacts | Rapports compresses - retention 30 jours |
-| Commentaire PR | Pull Request | Resume automatique des resultats sur chaque PR |
+| Type             | Emplacement                                | Description                                     |
+| ---------------- | ------------------------------------------ | ----------------------------------------------- |
+| pytest-html      | `reports/report-{browser}-{viewport}.html` | Rapport HTML autonome par configuration         |
+| Allure           | `reports/allure-results/`                  | Donnees brutes JSON pour generation Allure      |
+| Screenshots      | `reports/screenshots/`                     | Captures automatiques uniquement en cas d'echec |
+| GitHub Artifacts | Actions > Artifacts                        | Rapports compresses - retention 30 jours        |
+| Commentaire PR   | Pull Request                               | Resume automatique des resultats sur chaque PR  |
 
 ---
 
@@ -360,15 +368,16 @@ Services disponibles : `tests-chromium-mobile`, `tests-chromium-tablet`, `tests-
 
 ### 9.1 Architecture 3 Niveaux
 
-| Niveau | Source | Usage |
-|--------|--------|-------|
-| **Statique** | `test_users.json` | Donnees de reference (users, accounts, beneficiaires, factures) - reutilisables a l'infini |
-| **Dynamique** | Factories Faker (`factories.py`) | Generation de donnees realistes a la volee (noms, emails, IBAN francais) |
-| **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de donnees dediee par environnement, reconfigurable |
+| Niveau         | Source                                | Usage                                                                                      |
+| -------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Statique**   | `test_users.json`                     | Donnees de reference (users, accounts, beneficiaires, factures) - reutilisables a l'infini |
+| **Dynamique**  | Factories Faker (`factories.py`)      | Generation de donnees realistes a la volee (noms, emails, IBAN francais)                   |
+| **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de donnees dediee par environnement, reconfigurable                                   |
 
 ### 9.2 Modeles de Donnees (ORM)
 
 5 modeles SQLAlchemy avec relations :
+
 - `User` (email, password, name, has_2fa, totp_code)
 - `Account` (user_id, type, number/IBAN, balance)
 - `Transaction` (account_id, type credit/debit, amount, description)
@@ -386,6 +395,7 @@ python -m tests.data.seed_data random --env=dev -c 20 -v  # Generer 20 jeux alea
 ```
 
 Hooks pytest integres dans `conftest.py` :
+
 - Fixtures de setup : preparation des donnees avant execution
 - `pytest_sessionfinish` : fermeture des connexions en fin de session
 
@@ -403,6 +413,7 @@ Hooks pytest integres dans `conftest.py` :
 ### 10.1 Outil de Versioning
 
 Le code source est versionne avec **Git** et heberge sur **GitHub** :
+
 - Branche `main` : code stable, protegee (merge via PR uniquement)
 - Branche `develop` : integration continue
 - Branches sprint : `sprint-1`, `sprint-2`, `sprint-3` (une branche par sprint)
@@ -411,13 +422,13 @@ Le code source est versionne avec **Git** et heberge sur **GitHub** :
 
 Les tags Git sont crees a la fin de chaque sprint et associes aux releases projet :
 
-| Tag | Sprint | Contenu |
-|-----|--------|---------|
-| `v1.0` | Sprint 1 | Framework de base + tests authentification |
-| `v2.0` | Sprint 2 | Tests securite + BDD + gestion donnees |
-| `v3.0` | Sprint 3 | Migration Playwright + Docker 9 conteneurs + CI/CD |
-| `v4.0` | Sprint 4 (planifie) | Tests virements |
-| `v5.0` | Sprint 5 (planifie) | Tests factures |
+| Tag    | Sprint              | Contenu                                            |
+| ------ | ------------------- | -------------------------------------------------- |
+| `v1.0` | Sprint 1            | Framework de base + tests authentification         |
+| `v2.0` | Sprint 2            | Tests securite + BDD + gestion donnees             |
+| `v3.0` | Sprint 3            | Migration Playwright + Docker 9 conteneurs + CI/CD |
+| `v4.0` | Sprint 4 (planifie) | Tests virements                                    |
+| `v5.0` | Sprint 5 (planifie) | Tests factures                                     |
 
 ```bash
 # Creer un tag de release
@@ -432,6 +443,7 @@ En cas de version defaillante, le processus de rollback est le suivant :
 1. **Identification** : les tests CI/CD echouent sur `main` → alerte automatique GitHub
 2. **Isolation** : identifier le commit/tag de derniere version stable
 3. **Retour arriere** :
+
    ```bash
    # Option 1 : revert du commit defaillant (preserve l'historique)
    git revert <commit-hash>
@@ -443,6 +455,7 @@ En cas de version defaillante, le processus de rollback est le suivant :
    git push origin hotfix/rollback-v2
    # Puis creer une PR vers main
    ```
+
 4. **Validation** : les tests smoke doivent repasser avant remise en production
 5. **Docker** : chaque image est taggee (`v3.0`) → relancer l'image stable si necessaire
 
@@ -467,12 +480,14 @@ En cas de version defaillante, le processus de rollback est le suivant :
 ### 11.3 Eco-Conception
 
 **Dans les scripts de test :**
+
 - Mode headless par defaut (pas de rendu graphique = moins de CPU/RAM)
 - Screenshots uniquement en cas d'echec (pas systematique)
 - `wait_until="domcontentloaded"` : navigation plus rapide, moins de requetes inutiles attendues
 - Selecteurs `data-testid` stables : moins de reruns dus a des locators fragiles
 
 **Dans l'infrastructure :**
+
 - Execution parallelisee (`-n auto`) : reduit le temps machine total
 - 9 conteneurs en parallele : meme couverture en moins de temps qu'une execution sequentielle
 - Rapports `--self-contained-html` : un seul fichier, pas d'assets supplementaires
@@ -485,18 +500,19 @@ En cas de version defaillante, le processus de rollback est le suivant :
 
 ### 12.1 KPIs Automatisation
 
-| Indicateur | Cible | Actuel |
-|------------|-------|--------|
-| Couverture automatisee (modules critiques) | > 70% | ~40% (2/5 modules implementes) |
-| Taux de reussite | > 95% | ~97% (40 passed, 1 xpassed, 1 error intermittente) |
-| Temps d'execution suite complete (1 conteneur) | < 10 minutes | ~6 minutes |
-| Faux positifs (reruns reussis) | < 5% | < 5% |
-| Couverture navigateurs | 3 navigateurs | Chromium + Firefox + WebKit |
-| Couverture viewports | 3 viewports | Mobile + Tablet + Desktop |
+| Indicateur                                     | Cible         | Actuel                                             |
+| ---------------------------------------------- | ------------- | -------------------------------------------------- |
+| Couverture automatisee (modules critiques)     | > 70%         | ~40% (2/5 modules implementes)                     |
+| Taux de reussite                               | > 95%         | ~97% (40 passed, 1 xpassed, 1 error intermittente) |
+| Temps d'execution suite complete (1 conteneur) | < 10 minutes  | ~6 minutes                                         |
+| Faux positifs (reruns reussis)                 | < 5%          | < 5%                                               |
+| Couverture navigateurs                         | 3 navigateurs | Chromium + Firefox + WebKit                        |
+| Couverture viewports                           | 3 viewports   | Mobile + Tablet + Desktop                          |
 
 ### 12.2 Dashboard de Suivi
 
 Les resultats sont visibles via :
+
 - **GitHub Actions** : Statut pass/fail a chaque push/PR (badge de statut)
 - **Commentaire automatique sur PR** : tableau de synthese des 9 configurations
 - **pytest-html** : Rapport HTML detaille par configuration (`reports/report-{browser}-{viewport}.html`)
@@ -509,12 +525,12 @@ Les resultats sont visibles via :
 
 ### 13.1 Roles et Responsabilites
 
-| Role | Responsabilite |
-|------|----------------|
-| Test Lead | Strategie, priorisation, reporting |
-| Automation Engineer | Developpement et maintenance scripts |
-| Developpeur | Revue code, testabilite, attributs `data-testid` |
-| Product Owner | Validation criteres acceptance |
+| Role                | Responsabilite                                   |
+| ------------------- | ------------------------------------------------ |
+| Test Lead           | Strategie, priorisation, reporting               |
+| Automation Engineer | Developpement et maintenance scripts             |
+| Developpeur         | Revue code, testabilite, attributs `data-testid` |
+| Product Owner       | Validation criteres acceptance                   |
 
 ### 13.2 Processus de Revue
 
