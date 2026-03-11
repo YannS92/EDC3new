@@ -8,7 +8,7 @@ Ce document définit la stratégie d'automatisation des tests pour l'application
 
 ## 2. Perimetre de l'Automatisation
 
-### 2.1 Phases de Tests Concernees
+### 2.1 Types de Tests et Couverture d'Automatisation
 
 | Phase                 | Description                           | Automatisation            | Statut         |
 | --------------------- | ------------------------------------- | ------------------------- | -------------- |
@@ -20,7 +20,7 @@ Ce document définit la stratégie d'automatisation des tests pour l'application
 | Tests de Performance  | Charge et temps de reponse            | Prevus (Sprint 6)         | Non implemente |
 | Tests de Securite     | Vulnerabilités OWASP                  | Prevus (Sprint futur)     | Non implemente |
 
-### 2.2 Types de Tests Automatises
+### 2.2 Couverture par Types de Tests
 
 On va utiliser une approche mêlant tests techniques et fonctionnels à cette étape du projet. Ces deux problématiques devraient idéalement être dissociées à long terme, on va procéder de cette manière car il est difficile d'avoir une bonne emprise sur ces problématiques au démarrage du projet :
 
@@ -30,9 +30,15 @@ On va utiliser une approche mêlant tests techniques et fonctionnels à cette é
 4. **Tests BDD** : Scénarios Gherkin avec double couverture (fonctionnel + BDD), 14 scénarios
 5. **Tests d'Accessibilité** (`@pytest.mark.accessibility`) : Conformite WCAG 2.1 via axe-core
 
-Au long terme on va essayer de modifier ces désignation en passant par un point de vue orienté sur la complexité des tests. Ce point de vue s'organiserait en 3 niveaux (positif, négatif, cas limites) qui remplaceraient smoke/regression/critique et s'appliqueraient à tous les tests.
+À long terme, les catégories actuelles (smoke, regression, critical) seront progressivement remplacées par une classification reposant sur plusieurs dimensions indépendantes décrivant les propriétés des tests.
 
-Par la suite on pourra alors y ajouter les dénominations techniques telles que : accessibilité, BDD, API, etc (idéalement on veut supprimer le mot valise régression car suivant les interprétations des équipes tous les tests peuvent être des "tests de régression").
+Une première dimension décrira le type de scénario testé (positif, négatif, cas limites).
+Une seconde dimension permettra d’identifier le type de test (bout en bout, accessibilité, BDD, API, etc.).
+Une troisième dimension reflétera la criticité métier des fonctionnalités testées (critique, important, normal).
+
+Enfin, une dimension liée à la complexité ou au coût d’exécution des tests pourra également être introduite (rapide, moyen, lent). Cette distinction permettra d’optimiser l’exécution des suites dans une logique d’éco-conception, en adaptant le périmètre exécuté selon le contexte (CI rapide, exécution complète, etc.).
+
+Cette approche permettra d’éviter les catégories trop larges comme « régression », qui deviennent ambiguës lorsque la suite de tests s’agrandit.
 
 Cela organise un compromis satisfaisant pour démarrer sur les premiers sprints sans perdre de temps.
 
