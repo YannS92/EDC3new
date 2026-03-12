@@ -1,5 +1,6 @@
 name: DigitalBank - Tests Automatises
 
+# Supprimer ça, le dispatcher entre les différents jobs à la place, pour remplir les rôle de la stratégie d'automatisation
 on:
   push:
     branches: [ main, develop ]
@@ -44,7 +45,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tests-reports
+          name: reports-tests-smoke
           path: digitalbank-automation/reports
           retention-days: 30
 
@@ -106,7 +107,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tests-reports
+          name: reports-tests-complete
           path: digitalbank-automation/reports
           retention-days: 30
 

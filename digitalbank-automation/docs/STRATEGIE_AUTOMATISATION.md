@@ -125,11 +125,11 @@ Le principe de **shift-left** consiste à déplacer les activités de test le pl
 **Mise en oeuvre dans ce projet :**
 
 | Pratique                  | Implémentation                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| ------------------------- | ------------------------------------------------------------------------------ |
 | BDD avant developpement   | Les scénarios Gherkin sont ecrits en amont, servant de specification vivante   |
 | Tests smoke < 1 min       | Feedback ultra-rapide pour le developpeur                                      |
 | Tests executés au commit  | GitHub Actions déclenche les smoke tests sur chaque push                       |
-| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 | ! pas sur de la faisabilité |
+| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 |
 | `data-testid` sur l'appli | Les développeurs intègrent les sélecteurs de test à la création des composants |
 
 ### 3.3 BDD - Behavior Driven Development
@@ -201,6 +201,8 @@ Rapport : visualisable par toutes parties prenantes pour un retour rapide (mieux
 | INT           | Tests d'intégration              | Données synthétiques          | Quotidien             |
 | UAT           | Tests fonctionnels et acceptance | Données anonymisées           | Par sprint            |
 | PREPROD       | Validation pré-production        | Clone production              | Hebdomadaire          |
+
+La fréquence d'éxecution sera complètement implémenté dans le futur lorsque l'application sera déployée dans les environnements, pour l'instant tout est local.
 
 ### 4.2 Configuration des Environnements
 
@@ -436,7 +438,7 @@ Le pipeline est compose de **2 jobs** :
 | Push sur `main` ou `develop` | Exécution automatique                                 |
 | Pull Request vers `main`     | Exécution automatique (bloquant) + commentaire resume |
 | Cron `0 23 * * 0-4`          | Exécution quotidienne a 00h00 Paris (lundi-vendredi)  |
-| Manuel (`workflow_dispatch`) | Exécution a la demande depuis l'interface GitHub      |
+| Manuel (`workflow_dispatch`) | Exécution à la demande depuis l'interface GitHub      |
 
 ### 8.3 Exécution Docker
 
