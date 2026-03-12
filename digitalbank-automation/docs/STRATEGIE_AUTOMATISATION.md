@@ -134,21 +134,59 @@ Le principe de **shift-left** consiste à déplacer les activités de test le pl
 
 ### 3.3 BDD - Behavior Driven Development
 
-Les tests BDD sont rediges en **Gherkin francais** pour maximiser la comprehension par toutes les parties prenantes (PO, dev, QA) :
+#### Introduction
+
+Il a été décidé de rédiger les tests en **Gherkin français**, un formalisme BDD (Behavior Driven Development), pour maximiser la compréhension par toutes les parties prenantes (PO, DEV, QA) :
+
+#### Exemple
+
+Fichier : `tests/bdd/features/authentification/connexion.feature`
 
 ```gherkin
-# Exemple : tests/bdd/features/authentification/connexion.feature
-Scenario: Connexion reussie avec identifiants valides
-  Given je suis sur la page de connexion
-  When je me connecte avec des identifiants valides
-  Then le dashboard est affiche
+@authentification
+Feature: Connexion utilisateur
+  En tant qu'utilisateur de DigitalBank
+  Je veux pouvoir me connecter à mon compte
+  Afin d'accéder à mes services bancaires
+
+  Background:
+    Given l'application est accessible
+    And je suis sur la page de connexion
+
+  @smoke @critical
+  Scenario: Connexion réussie avec identifiants valides
+    When je me connecte avec <email> et <mot de passe>
+    Then le dashboard est affiché
+    And le nom d'utilisateur <nom utilisateur> est affiché
+
+  @smoke @regression
+  Scenario: ......
 ```
 
-**Benefices :**
+Explications :
 
-- Spécification éxecutable (les scénarios servent à la fois de spécifications et de tests)
-- Comprehensible par des non-techniciens
-- Double couverture : chaque scenario BDD est complement des tests fonctionnels classiques
+- Feature : décrit clairement le domaine fonctionnel
+- Background : évite la répétition de steps pour plusieurs scénarios
+- Tags (@smoke, @critical, @authentification, ...) : permettent d’exécuter uniquement certains tests ou une suite de tests (tag associé à la feature)
+
+**Concepts clés BDD :**
+
+- Scénarios exécutables : les tests valident directement la spécification métier
+- Lisible et compréhensible par toutes les parties prenantes
+- Réutilisation des étapes commune pour simplifier la maintenance
+- Intégrable facilement dans CI/CD grâce aux tags et filtres
+
+**Workflow Haut Niveau :**
+
+```txt
+Scénario métier : défini en langage clair, compréhensible par tous
+        ↓
+Test automatisé : exécuté automatiquement par le framework BDD
+        ↓
+Exécution sur l’application : vérification réelle des fonctionnalités
+        ↓
+Rapport : visualisable par toutes parties prenantes pour un retour rapide (mieux que des logs techniques)
+```
 
 ---
 
@@ -156,13 +194,17 @@ Scenario: Connexion reussie avec identifiants valides
 
 ### 4.1 Architecture des Environnements
 
-| Environnement | Usage                            | Donnees                       | Frequence d'exécution |
+| Environnement | Usage                            | Données                       | Frequence d'exécution |
 | ------------- | -------------------------------- | ----------------------------- | --------------------- |
-| Docker        | Exécution CI/CD et locale        | Donnees synthetiques (SQLite) | A chaque push/PR      |
-| DEV           | Developpement local              | Donnees mockees (SQLite)      | A chaque commit       |
-| INT           | Tests d'integration              | Donnees synthetiques          | Quotidien             |
-| UAT           | Tests fonctionnels et acceptance | Donnees anonymisees           | Par sprint            |
-| PREPROD       | Validation pre-production        | Clone production              | Hebdomadaire          |
+| Docker        | Exécution CI/CD et locale        | Données synthétiques (SQLite) | A chaque push/PR      |
+| DEV           | Développement local              | Données mockées (SQLite)      | A chaque commit       |
+| INT           | Tests d'intégration              | Données synthétiques          | Quotidien             |
+| UAT           | Tests fonctionnels et acceptance | Données anonymisées           | Par sprint            |
+| PREPROD       | Validation pré-production        | Clone production              | Hebdomadaire          |
+
+Á cette étape du projet, seul les environnement de développement et environnement docker sont disponible, l'application n'étant pas encore déployée sur des environnements.
+
+Il a donc été décidé de déployer l'application localement pour le moment, d'où l'environnement docker et local. Cette solution est temporaire, les cas de tests automatisés devraient normalement être exécutés sur l'environnement d'intégration et pas en local.
 
 ### 4.2 Configuration des Environnements
 
@@ -171,7 +213,7 @@ Fichier : `config/environments.yaml`
 ```yaml
 environments:
   docker:
-    base_url: "http://webapp/" # Conteneur nginx interne
+    base_url: "http://webapp/" # Conteneur nginx du docker compose
     timeout: 60
 
   dev:
@@ -191,8 +233,8 @@ environments:
     timeout: 60
 ```
 
-Chaque environnement dispose de sa propre base SQLite (`test_data_{env}.db`) pour l'isolation des donnees.
-Parametrable via `--env` : `pytest tests/ --env=uat`
+Chaque environnement dispose de sa propre base SQLite (`test_data_{env}.db`) pour l'isolation des données.
+Paramètre flexible via `--env` : `pytest tests/ --env=uat`
 
 ---
 
