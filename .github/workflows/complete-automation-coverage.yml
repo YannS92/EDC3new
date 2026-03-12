@@ -1,5 +1,6 @@
 name: DigitalBank - Tests Automatises
 
+# Supprimer ça, le dispatcher entre les différents jobs à la place, pour remplir les rôle de la stratégie d'automatisation
 on:
   push:
     branches: [ main, develop ]
@@ -12,42 +13,9 @@ on:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
-  # Dispatcher : détermine quels jobs exécuter selon le contexte
-  # ═══════════════════════════════════════════════════════════════
-  dispatcher:
-    runs-on: ubuntu-latest
-    outputs:
-      run-smoke:       ${{ steps.dispatch.outputs.run-smoke }}
-      run-regression:  ${{ steps.dispatch.outputs.run-regression }}
-      run-accessibility: ${{ steps.dispatch.outputs.run-accessibility }}
-      run-publish:     ${{ steps.dispatch.outputs.run-publish }}
-    steps:
-      - name: Determine jobs to run
-        id: dispatch
-        run: |
-          EVENT="${{ github.event_name }}"
-          echo "Event: $EVENT"
-
-          # Smoke : toujours
-          echo "run-smoke=true" >> $GITHUB_OUTPUT
-
-          # Regression + Accessibility + Publish : PR, schedule, manuel, ou push sur main
-          if [[ "$EVENT" == "pull_request" || "$EVENT" == "schedule" || "$EVENT" == "workflow_dispatch" || "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "run-regression=true"    >> $GITHUB_OUTPUT
-            echo "run-accessibility=true" >> $GITHUB_OUTPUT
-            echo "run-publish=true"       >> $GITHUB_OUTPUT
-          else
-            echo "run-regression=false"    >> $GITHUB_OUTPUT
-            echo "run-accessibility=false" >> $GITHUB_OUTPUT
-            echo "run-publish=false"       >> $GITHUB_OUTPUT
-          fi
-
-  # ═══════════════════════════════════════════════════════════════
-  # Job 1 — Smoke tests (bloquants)
+  # Exécution des tests
   # ═══════════════════════════════════════════════════════════════
   tests-smoke:
-    needs: dispatcher
-    if: needs.dispatcher.outputs.run-smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -64,7 +32,6 @@ jobs:
       - name: Check exit codes
         if: always()
         run: |
-          FAIL=0
           for CID in $(docker compose ps -aq); do
             EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
             NAME=$(docker inspect $CID --format='{{.Name}}')
@@ -73,7 +40,6 @@ jobs:
               FAIL=1
             fi
           done
-          exit $FAIL
 
       - name: Upload Reports
         if: always()
@@ -87,14 +53,9 @@ jobs:
         if: always()
         run: docker compose down -v
 
-  # ═══════════════════════════════════════════════════════════════
-  # Job 2 — Regression tests (parallelisés, après smoke)
-  # ═══════════════════════════════════════════════════════════════
-  tests-regression:
-    needs: [dispatcher, tests-smoke]
-    if: needs.dispatcher.outputs.run-regression == 'true'
+  tests-complete:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
 
     steps:
       - name: Checkout du code
@@ -102,6 +63,9 @@ jobs:
 
       - name: Build images Docker
         run: docker compose build --parallel
+
+      - name: Run Chromium Mobile
+        run: docker compose run tests-chromium-mobile
 
       - name: Run Firefox Desktop
         run: docker compose run tests-firefox-desktop
@@ -130,7 +94,6 @@ jobs:
       - name: Check exit codes
         if: always()
         run: |
-          FAIL=0
           for CID in $(docker compose ps -aq); do
             EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
             NAME=$(docker inspect $CID --format='{{.Name}}')
@@ -139,13 +102,12 @@ jobs:
               FAIL=1
             fi
           done
-          exit $FAIL
 
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-tests-regression
+          name: reports-tests-complete
           path: digitalbank-automation/reports
           retention-days: 30
 
@@ -153,88 +115,3 @@ jobs:
         if: always()
         run: docker compose down -v
 
-  # ═══════════════════════════════════════════════════════════════
-  # Job 3 — Accessibility tests (en parallèle de regression)
-  # ═══════════════════════════════════════════════════════════════
-  tests-accessibility:
-    needs: [dispatcher, tests-smoke]
-    if: needs.dispatcher.outputs.run-accessibility == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Build images Docker
-        run: docker compose build --parallel
-
-      - name: Run accessibility tests
-        run: docker compose run -e PYTEST_MARKERS="accessibility" tests-chromium-desktop
-
-      - name: Check exit codes
-        if: always()
-        run: |
-          FAIL=0
-          for CID in $(docker compose ps -aq); do
-            EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
-            NAME=$(docker inspect $CID --format='{{.Name}}')
-            echo "$NAME -> $EXIT_CODE"
-            if [ "$EXIT_CODE" != "0" ]; then
-              FAIL=1
-            fi
-          done
-          exit $FAIL
-
-      - name: Upload Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports-tests-accessibility
-          path: digitalbank-automation/reports
-          retention-days: 30
-
-      - name: Stop containers
-        if: always()
-        run: docker compose down -v
-
-  # ═══════════════════════════════════════════════════════════════
-  # Job 4 — Publish results (commentaire automatique sur les PR)
-  # ═══════════════════════════════════════════════════════════════
-  publish-results:
-    needs: [dispatcher, tests-regression, tests-accessibility]
-    if: always() && needs.dispatcher.outputs.run-publish == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Download all reports
-        uses: actions/download-artifact@v4
-        with:
-          path: all-reports
-
-      - name: Post PR comment with results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const regression   = '${{ needs.tests-regression.result }}';
-            const accessibility = '${{ needs.tests-accessibility.result }}';
-            const icon = (r) => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
-
-            const body = [
-              '## Résultats des tests automatisés',
-              '',
-              `| Job               | Statut              |`,
-              `|-------------------|---------------------|`,
-              `| Smoke             | ✅ (bloquant passé) |`,
-              `| Regression        | ${icon(regression)} ${regression}    |`,
-              `| Accessibility     | ${icon(accessibility)} ${accessibility} |`,
-            ].join('\n');
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            });
