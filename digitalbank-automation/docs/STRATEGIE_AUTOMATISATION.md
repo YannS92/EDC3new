@@ -363,6 +363,7 @@ Un scénario est éligible à l'automatisation s'il répond aux critères suivan
 | Critère                     | Poids | Seuil                                  |
 | --------------------------- | ----- | -------------------------------------- |
 | Fréquence d'exécution       | 30%   | >= 1 fois/sprint                       |
+| Fréquence d'exécution       | 15%   | >= 1 fois/mois                         |
 | Stabilité fonctionnelle     | 25%   | Pas de changement prévu sur 3 sprints  |
 | Criticité metier            | 20%   | Bloquant ou majeur                     |
 | Complexité d'automatisation | 15%   | Effort d’automatisation < 2 jours      |
