@@ -74,7 +74,9 @@ Ces différentes métriques nous ont ainsi permisent d'organiser le tableau suiv
 | Firefox    | smoke                         | tous                          | smoke             |
 | WebKit     | regression + critical + smoke | critical + smoke              | tous              |
 
-On remarque que la distribution des niveaux ne suit pas exactement la fréquence d'utilisation, la décision a été prise d’exécuter au moins une suite complète pour chaque technologie et chaque breakpoint/taille d’écran.. Cela permet à certains tests de bien remplir leur rôle (tel que les tests d'accessibilité) et de vérifier que les différents breakpoints n'apportent pas de problèmes fonctionnels.
+On remarque que la distribution des niveaux ne suit pas exactement la fréquence d'utilisation.
+En effet, la décision a été prise d’exécuter au moins une suite complète pour chaque technologie et chaque breakpoint/taille d’écran.
+Cela permet à certains tests de bien remplir leur rôle (tel que les tests d'accessibilité) et de vérifier que les différents breakpoints et technologies n'apportent pas de problèmes fonctionnels.
 
 ---
 
@@ -84,32 +86,37 @@ On remarque que la distribution des niveaux ne suit pas exactement la fréquence
 
 #### Organisation retenue : Agile (sprints de 2 semaines)
 
-| Critere                   | Agile                                 | Cycle en V                                 |
+| Critère                   | Agile                                 | Cycle en V                                 |
 | ------------------------- | ------------------------------------- | ------------------------------------------ |
-| **Perimetre**             | Evolutif, incrementiel                | Fixe, defini en debut de projet            |
-| **Integration des tests** | Continue, integree dans chaque sprint | Tardive, en phase de recette               |
-| **Feedback**              | Rapide (a chaque sprint)              | Lent (decouverte des bugs en fin de cycle) |
-| **Maintenance scripts**   | Constante (evolutions frequentes)     | Allégée (perimetre stable)                 |
-| **Collaboration**         | Dev + QA + PO ensemble                | Cloisonnement par phase                    |
+| **Périmètre**             | Évolutif, incrémental                 | Fixe, défini en début de projet            |  
+| **Intégration des tests** | Continue, integrée dans chaque sprint | Tardive, en phase de recette               |
+| **Feedback**              | Rapide (à chaque sprint)              | Lent (découverte des bugs en fin de cycle) |
+| **Maintenance scripts**   | Continue (évolutions fréquentes)      | Plus stable (périmètre fixé)               |
+| **Collaboration**         | Dev + QA + PO ensemble                | Collaboration plus séquentielle            |
+
+**Pourquoi l'Agile face au Cycle en V dans le contexte :**
+
+- DigitalBank est une application en cours d’évolution dont les fonctionnalités sont amenées à changer
+- Procéder par itération permet de s'adapter aux changements entre chaque sprint
+- Cette approche facilite la construction progressive du système en validant les briques fonctionnelles au fur et à mesure
+- Le V-Model repose sur des phases séquentielles peu adaptées aux changements fréquents
+- Les tests étant réalisés en fin de cycle, la détection tardive des défauts augmente le coût de correction
 
 **Avantages de l'Agile pour l'automatisation :**
 
-- Feedback immediat sur chaque feature developpee
-- Automatisation progressive et alignee sur les livraisons
-- Identification precoce des regressions (shift left natif)
-- Adaptabilite rapide aux changements de specifications
+- Feedback rapide et continu
+- Détection précoce des régressions (shift-left natif)
+- Automatisation progressive et priorisée (maintenabilité, stabilité)
+- Couverture de tests alignée sur la valeur métier (risk-based testing)
+- Adaptabilité aux changements de spécifications
+- Collaboration forte entre QA, dev et produit
 
 **Inconvenients de l'Agile pour l'automatisation :**
 
-- Maintenance continue des scripts au rythme des evolutions
-- Risque de dette technique si les scripts ne sont pas refactores
-- Necessite une bonne discipline de tests (conventions, review)
-
-**Pourquoi pas le Cycle en V :**
-
-- DigitalBank est une application evoluant par sprints
-- Les tests tardifs du Cycle en V augmentent le cout des corrections
-- L'approche Agile permet de valider chaque increment avant integration
+- Maintenance continue des scripts au rythme des évolutions
+- Risque de dette technique si la suite de tests n’est pas régulièrement refactorisée
+- Nécessite une forte discipline de tests (conventions, revues, standards)
+- Instabilité des tests si les fonctionnalités ou interfaces évoluent trop rapidement
 
 ### 3.2 Shift Left
 
@@ -221,7 +228,7 @@ digitalbank-automation/
 │   │   ├── features/
 │   │   │   ├── authentification/     # connexion, deconnexion, 2FA (8 scénarios)
 │   │   │   └── securite/            # changement mot de passe, gestion 2FA (6 scénarios)
-│   │   └── step_definitions/        # Implementation des steps Python
+│   │   └── step_définitions/        # Implementation des steps Python
 │   ├── data/                   # Gestion des donnees de test
 │   │   ├── test_users.json          # Donnees statiques de reference
 │   │   ├── models.py                # Modeles SQLAlchemy (User, Account, Transaction...)
@@ -298,13 +305,13 @@ Les locators utilisent des selecteurs CSS avec attributs `data-testid` pour la s
 
 ---
 
-## 7. Criteres d'Eligibilite a l'Automatisation
+## 7. Critères d'Eligibilite a l'Automatisation
 
 ### 7.1 Matrice de Décision
 
 Un scenario est eligible a l'automatisation s'il repond aux critères suivants :
 
-| Critere                     | Poids | Seuil                                 |
+| Critère                     | Poids | Seuil                                 |
 | --------------------------- | ----- | ------------------------------------- |
 | Frequence d'exécution       | 30%   | >= 1 fois/sprint                      |
 | Stabilite fonctionnelle     | 25%   | Pas de changement prevu sur 3 sprints |
@@ -342,7 +349,7 @@ Un scenario est eligible a l'automatisation s'il repond aux critères suivants :
 - [ ] Le scenario manuel est documente et valide
 - [ ] Les donnees de test sont identifiees
 - [ ] Les prerequis techniques sont disponibles (attributs `data-testid`)
-- [ ] Les criteres d'acceptance sont definis
+- [ ] Les critères d'acceptance sont définis
 - [ ] L'environnement de test est stable
 
 ---
@@ -568,7 +575,7 @@ Les resultats sont visibles via :
 | Test Lead           | Stratégie, priorisation, reporting               |
 | Automation Engineer | Developpement et maintenance scripts             |
 | Developpeur         | Revue code, testabilite, attributs `data-testid` |
-| Product Owner       | Validation criteres acceptance                   |
+| Product Owner       | Validation critères acceptance                   |
 
 ### 13.2 Processus de Revue
 
