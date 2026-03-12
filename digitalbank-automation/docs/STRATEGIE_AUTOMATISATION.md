@@ -88,7 +88,7 @@ Cela permet à certains tests de bien remplir leur rôle (tel que les tests d'ac
 
 | Critère                   | Agile                                 | Cycle en V                                 |
 | ------------------------- | ------------------------------------- | ------------------------------------------ |
-| **Périmètre**             | Évolutif, incrémental                 | Fixe, défini en début de projet            |  
+| **Périmètre**             | Évolutif, incrémental                 | Fixe, défini en début de projet            |
 | **Intégration des tests** | Continue, integrée dans chaque sprint | Tardive, en phase de recette               |
 | **Feedback**              | Rapide (à chaque sprint)              | Lent (découverte des bugs en fin de cycle) |
 | **Maintenance scripts**   | Continue (évolutions fréquentes)      | Plus stable (périmètre fixé)               |
@@ -125,11 +125,11 @@ Le principe de **shift-left** consiste à déplacer les activités de test le pl
 **Mise en oeuvre dans ce projet :**
 
 | Pratique                  | Implémentation                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------ |
+| ------------------------- | ------------------------------------------------------------------------------ | --------------------------- |
 | BDD avant developpement   | Les scénarios Gherkin sont ecrits en amont, servant de specification vivante   |
 | Tests smoke < 1 min       | Feedback ultra-rapide pour le developpeur                                      |
 | Tests executés au commit  | GitHub Actions déclenche les smoke tests sur chaque push                       |
-| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 | ! pas sur de la faisabilité
+| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 | ! pas sur de la faisabilité |
 | `data-testid` sur l'appli | Les développeurs intègrent les sélecteurs de test à la création des composants |
 
 ### 3.3 BDD - Behavior Driven Development
@@ -167,14 +167,14 @@ Explications :
 
 - Feature : décrit clairement le domaine fonctionnel
 - Background : évite la répétition de steps pour plusieurs scénarios
-- Tags (@smoke, @critical, @authentification, ...) : permettent d’exécuter uniquement certains tests ou une suite de tests (tag associé à la feature)
+- Markers (@smoke, @critical, @authentification, ...) : permettent d’exécuter uniquement certains tests ou une suite de tests (marker associé à la feature)
 
 **Concepts clés BDD :**
 
 - Scénarios exécutables : les tests valident directement la spécification métier
 - Lisible et compréhensible par toutes les parties prenantes
 - Réutilisation des étapes commune pour simplifier la maintenance
-- Intégrable facilement dans CI/CD grâce aux tags et filtres
+- Intégrable facilement dans CI/CD grâce aux markers et filtres
 
 **Workflow Haut Niveau :**
 
@@ -202,9 +202,9 @@ Rapport : visualisable par toutes parties prenantes pour un retour rapide (mieux
 | UAT           | Tests fonctionnels et acceptance | Données anonymisées           | Par sprint            |
 | PREPROD       | Validation pré-production        | Clone production              | Hebdomadaire          |
 
-Á cette étape du projet, seul les environnement de développement et environnement docker sont disponible, l'application n'étant pas encore déployée sur des environnements.
+Á cette étape du projet, seul les environnements de développement et docker sont disponibles, l'application n'étant pas encore déployée sur aucun des environnements.
 
-Il a donc été décidé de déployer l'application localement pour le moment, d'où l'environnement docker et local. Cette solution est temporaire, les cas de tests automatisés devraient normalement être exécutés sur l'environnement d'intégration et pas en local.
+Il a donc été décidé de déployer l'application localement pour les tests, d'où l'environnement docker et local. Cette solution est temporaire, les cas de tests automatisés devraient normalement être exécutés sur l'environnement d'intégration et pas en local.
 
 ### 4.2 Configuration des Environnements
 
@@ -242,18 +242,18 @@ Paramètre flexible via `--env` : `pytest tests/ --env=uat`
 
 ### 5.1 Stack Technique Retenue
 
-| Categorie               | Outil                       | Version    | Justification                                                                                          |
-| ----------------------- | --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| **Framework Web**       | Playwright                  | 1.42.0     | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, headless Linux sans config |
-| **Langage**             | Python                      | 3.10       | Lisibilite, bibliotheques riches, courbe d'apprentissage faible                                        |
-| **Framework Test**      | pytest                      | 8.0        | Fixtures, parametrization, plugins, markers                                                            |
-| **BDD**                 | pytest-bdd                  | 7.0        | Gherkin natif en francais, integration pytest                                                          |
-| **Tests Accessibilite** | axe-playwright-python       | latest     | Reference WCAG 2.1, integration Playwright                                                             |
-| **Reporting**           | pytest-html + Allure        | 4.1 / 2.13 | Rapport HTML autonome + donnees Allure pour dashboards                                                 |
-| **CI/CD**               | GitHub Actions + Docker     | -          | Integration native GitHub, containerisation reproductible                                              |
-| **Gestion Donnees**     | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Generation donnees realistes, ORM, isolation par env                                                   |
-| **Containerisation**    | Docker Compose              | -          | Orchestration webapp (nginx) + 9 conteneurs de test                                                    |
-| **Parallélisation**     | pytest-xdist                | 3.5        | Exécution en parallèle des tests au sein d'un conteneur                                                |
+| Catégorie               | Outil                       | Version    | Justification                                                                                      |
+| ----------------------- | --------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
+| **Framework Web**       | Playwright                  | 1.42.0     | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, moins de configuration |
+| **Langage**             | Python                      | 3.10       | Lisibilité, bibliothèques riches, courbe d'apprentissage faible                                    |
+| **Framework Test**      | pytest                      | 8.0        | Fixtures, paramétrisation, plugins, markers                                                        |
+| **BDD**                 | pytest-bdd                  | 7.0        | Gherkin natif en français, intégration pytest                                                      |
+| **Tests Accessibilité** | axe-playwright-python       | latest     | Référence WCAG 2.1, intégration Playwright                                                         |
+| **Reporting**           | pytest-html + Allure        | 4.1 / 2.13 | Rapport HTML autonome + données Allure pour dashboards                                             |
+| **CI/CD**               | GitHub Actions + Docker     | -          | Intégration native GitHub, containerisation reproductible                                          |
+| **Gestion Données**     | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Génération données réalistes, ORM, isolation par env                                               |
+| **Containerisation**    | Docker Compose              | -          | Orchestration webapp (nginx) + 9 conteneurs de test                                                |
+| **Parallélisation**     | pytest-xdist                | 3.5        | Exécution en parallèle des tests au sein d'un conteneur                                            |
 
 ### 5.2 Architecture du Framework
 
@@ -276,7 +276,7 @@ digitalbank-automation/
 │   │   ├── models.py                # Modeles SQLAlchemy (User, Account, Transaction...)
 │   │   ├── factories.py             # Factories Faker (generation dynamique)
 │   │   ├── database.py              # DatabaseManager (Singleton par env)
-│   │   ├── data_manager.py          # Gestionnaire centralise
+│   │   ├── data_manager.py          # Gestionnaire centralisé
 │   │   ├── seed_data.py             # Scripts seed/cleanup/reset + CLI
 │   │   └── db/                      # Bases SQLite par environnement
 │   └── utils/                  # Page Object Model
@@ -284,66 +284,66 @@ digitalbank-automation/
 │       └── pages/
 │           ├── login_page.py        # Page connexion + 2FA + reset
 │           ├── dashboard_page.py    # Page tableau de bord
-│           ├── security_page.py     # Page parametres securite
-│           ├── transfer_page.py     # Page virements (Page Object pret, tests Sprint 4)
-│           └── bills_page.py        # Page factures (Page Object pret, tests Sprint 5)
-├── reports/                    # Rapports generes
+│           ├── security_page.py     # Page paramètres sécurité
+│           ├── transfer_page.py     # Page virements (Page Object prêt, tests Sprint 4)
+│           └── bills_page.py        # Page factures (Page Object prêt, tests Sprint 5)
+├── reports/                    # Rapports générés
 │   ├── report-{browser}-{viewport}.html  # Rapport pytest-html par config
-│   └── allure-results/              # Donnees brutes Allure
+│   └── allure-results/              # Données brutes Allure
 ├── docs/                       # Documentation
 ├── Dockerfile                  # Image Playwright Python (mcr.microsoft.com/playwright/python:v1.42.0)
-├── requirements.txt            # Dependances Python
+├── requirements.txt            # Dépendances Python
 └── conftest.py                 # Configuration pytest globale (fixtures, hooks, BDD)
 ```
 
 ### 5.3 Pattern Page Object Model (POM)
 
-Toutes les pages heritent de `BasePage` qui fournit :
+Toutes les pages héritent de `BasePage` qui fournit :
 
 - Attentes implicites Playwright (`locator.wait_for()`, `wait_for_function()`)
 - Actions communes (`click`, `enter_text`, `get_text`)
-- Verification d'accessibilite via axe-core (`check_accessibility`)
+- Vérification d'accessibilité via axe-core (`check_accessibility`)
 - Capture de screenshots pour Allure (`_capture_screenshot`)
-- Support `dispatch_event("click")` pour les elements caches par CSS
+- Support `dispatch_event("click")` pour les éléments cachés par CSS
 
-Les locators utilisent des selecteurs CSS avec attributs `data-testid` pour la stabilite, decouples du DOM.
+Les locators utilisent des sélecteurs CSS avec attributs `data-testid` pour la stabilité, decouplées du DOM.
 
 ---
 
-## 6. Planification des Developpements
+## 6. Planification des Développements
 
 ### 6.1 Roadmap par Sprint
 
 | Sprint   | Semaines | Livrables                                                       | Statut      |
 | -------- | -------- | --------------------------------------------------------------- | ----------- |
-| Sprint 1 | S1-S2    | Framework de base, Page Objects, tests authentification         | Termine     |
-| Sprint 2 | S3-S4    | Tests securite, BDD (Gherkin), gestion donnees                  | Termine     |
-| Sprint 3 | S5-S6    | Migration Playwright, Docker 9 conteneurs, CI/CD GitHub Actions | Termine     |
-| Sprint 4 | S7-S8    | Tests virements bancaires (Page Object pret)                    | A planifier |
-| Sprint 5 | S9-S10   | Tests paiement factures (Page Object pret)                      | A planifier |
-| Sprint 6 | S11-S12  | Tests performance, optimisation CI/CD                           | A planifier |
+| Sprint 1 | S1-S2    | Framework de base, Page Objects, tests authentification         | Terminé     |
+| Sprint 2 | S3-S4    | Tests sécurité, BDD (Gherkin), gestion données                  | Terminé     |
+| Sprint 3 | S5-S6    | Migration Playwright, Docker 9 conteneurs, CI/CD GitHub Actions | Terminé     |
+| Sprint 4 | S7-S8    | Tests virements bancaires (Page Object pret)                    | Á planifier |
+| Sprint 5 | S9-S10   | Tests paiement factures (Page Object pret)                      | Á planifier |
+| Sprint 6 | S11-S12  | Tests performance, optimisation CI/CD                           | Á planifier |
 
 ### 6.2 Couverture Actuelle par Module
 
-| Module                                                 | Tests Fonctionnels | Tests BDD   | Priorite      | Statut           |
+| Module                                                 | Tests Fonctionnels | Tests BDD   | Priorité      | Statut           |
 | ------------------------------------------------------ | ------------------ | ----------- | ------------- | ---------------- |
-| Authentification (login, 2FA, logout, reset)           | 12 tests           | 8 scénarios | P1 - Critique | Implemente       |
-| Parametres Securite (mot de passe, 2FA, notifications) | 11 tests           | 6 scénarios | P2 - Haute    | Implemente       |
-| Consultation Compte (solde, historique)                | -                  | -           | P1 - Critique | Page Object pret |
-| Virements Bancaires (internes, externes)               | -                  | -           | P1 - Critique | Page Object pret |
-| Paiement Factures                                      | -                  | -           | P2 - Haute    | Page Object pret |
+| Authentification (login, 2FA, logout, reset)           | 12 tests           | 8 scénarios | P1 - Critique | Implementé       |
+| Paramètres Securité (mot de passe, 2FA, notifications) | 11 tests           | 6 scénarios | P2 - Haute    | Implementé       |
+| Consultation Compte (solde, historique)                | -                  | -           | P1 - Critique | Page Object prêt |
+| Virements Bancaires (internes, externes)               | -                  | -           | P1 - Critique | Page Object prêt |
+| Paiement Factures                                      | -                  | -           | P2 - Haute    | Page Object prêt |
 
-**Note** : Les Page Objects `transfer_page.py`, `bills_page.py` et `dashboard_page.py` sont deja developpes et prets a recevoir des tests, permettant une montee en charge rapide lors des prochains sprints.
+**Note** : Les Page Objects `transfer_page.py`, `bills_page.py` et `dashboard_page.py` sont déjà développés et prêts a recevoir des tests, permettant une montée en charge rapide lors des prochains sprints.
 
 ### 6.3 Repartition des Tests par Marker
 
 | Marker                     | Nombre de tests | Usage                                                  |
 | -------------------------- | --------------- | ------------------------------------------------------ |
-| `@smoke`                   | ~11             | Verification rapide, exécution a chaque push           |
-| `@regression`              | ~30             | Suite complete, exécution quotidienne                  |
+| `@smoke`                   | ~11             | Vérification rapide, exécution à chaque push           |
+| `@regression`              | ~30             | Suite complète, exécution quotidienne                  |
 | `@critical`                | ~8              | Tests bloquants pour la mise en production             |
-| `@accessibility` / `@wcag` | 2               | Conformite WCAG 2.1                                    |
-| `@xfail`                   | 1               | Bug connu documente (labels manquants sur les toggles) |
+| `@accessibility` / `@wcag` | 2               | Conformité WCAG 2.1                                    |
+| `@xfail`                   | 1               | Bug connu documenté (labels manquants sur les toggles) |
 
 ---
 

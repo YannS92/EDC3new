@@ -24,8 +24,8 @@ COPY . .
 ENTRYPOINT [\
   "sh", "-c", "\
   MARKERS_ARG=\"\"; \
-  if [ -n \"${PYTEST_TAGS}\" ]; then \
-    MARKERS_ARG=\"-m ${PYTEST_TAGS}\"; \
+  if [ -n \"${PYTEST_MARKERS}\" ]; then \
+    MARKERS_ARG=\"-m ${PYTEST_MARKERS}\"; \
   fi; \
   CMD=\"pytest tests/ -v \
     -n ${PARALLEL_PROCESSES} \
