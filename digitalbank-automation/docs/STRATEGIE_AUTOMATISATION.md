@@ -36,7 +36,7 @@ Une première dimension décrira le type de scénario testé (positif, négatif,
 Une seconde dimension permettra d’identifier le type de test (bout en bout, accessibilité, BDD, API, etc.).
 Une troisième dimension reflétera la criticité métier des fonctionnalités testées (critique, important, normal).
 
-Enfin, une dimension liée à la complexité ou au coût d’exécution des tests pourra également être introduite (rapide, moyen, lent). Cette distinction permettra d’optimiser l’exécution des suites dans une logique d’éco-conception, en adaptant le périmètre exécuté selon le contexte (CI rapide, exécution complète, etc.).
+Enfin, une dimension liée à la complexité ou au coût d’exécution des tests pourra également être introduite (rapide, moyen, lent). Cette distinction permettra d’optimiser l’exécution des suites dans une logique d’éco-conception, en adaptant le périmètre exécuté selon le contexte (Pull Request, CI rapide, exécution complète, etc.).
 
 Cette approche permettra d’éviter les catégories trop larges comme « régression », qui deviennent ambiguës lorsque la suite de tests s’agrandit.
 
@@ -120,17 +120,17 @@ Cela permet à certains tests de bien remplir leur rôle (tel que les tests d'ac
 
 ### 3.2 Shift Left
 
-Le principe de **shift left** consiste a avancer les activites de test le plus tot possible dans le cycle de developpement, plutot que d'attendre la fin du developpement.
+Le principe de **shift-left** consiste à déplacer les activités de test le plus tôt possible dans le cycle de vie du logiciel, plutôt que d'attendre la fin du développement, on veut le faire pendant le développement également.
 
 **Mise en oeuvre dans ce projet :**
 
-| Pratique                  | Implementation                                                                 |
+| Pratique                  | Implémentation                                                                 |
 | ------------------------- | ------------------------------------------------------------------------------ |
-| Tests executes au commit  | GitHub Actions declenche les smoke tests sur chaque push                       |
-| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 |
 | BDD avant developpement   | Les scénarios Gherkin sont ecrits en amont, servant de specification vivante   |
 | Tests smoke < 1 min       | Feedback ultra-rapide pour le developpeur                                      |
-| `data-testid` sur l'appli | Les developpeurs integrent les selecteurs de test a la creation des composants |
+| Tests executés au commit  | GitHub Actions déclenche les smoke tests sur chaque push                       |
+| Tests bloquants sur PR    | Les tests critiques doivent passer avant tout merge sur `main`                 | ! pas sur de la faisabilité
+| `data-testid` sur l'appli | Les développeurs intègrent les sélecteurs de test à la création des composants |
 
 ### 3.3 BDD - Behavior Driven Development
 
