@@ -354,51 +354,59 @@ Les sélecteurs utilisent des attributs dédiés (`data-testid`) afin de garanti
 
 ---
 
-## 7. Critères d'Eligibilite a l'Automatisation
+## 7. Critères d'Éligibilité à l'Automatisation
 
 ### 7.1 Matrice de Décision
 
-Un scenario est eligible a l'automatisation s'il repond aux critères suivants :
+Un scénario est éligible à l'automatisation s'il répond aux critères suivants :
 
-| Critère                     | Poids | Seuil                                 |
-| --------------------------- | ----- | ------------------------------------- |
-| Frequence d'exécution       | 30%   | >= 1 fois/sprint                      |
-| Stabilite fonctionnelle     | 25%   | Pas de changement prevu sur 3 sprints |
-| Criticite metier            | 20%   | Bloquant ou majeur                    |
-| Complexite d'automatisation | 15%   | Effort < 2 jours                      |
-| ROI                         | 10%   | Gain temps > 50% après 5 exécutions   |
+| Critère                     | Poids | Seuil                                  |
+| --------------------------- | ----- | -------------------------------------- |
+| Fréquence d'exécution       | 30%   | >= 1 fois/sprint                       |
+| Stabilité fonctionnelle     | 25%   | Pas de changement prévu sur 3 sprints  |
+| Criticité metier            | 20%   | Bloquant ou majeur                     |
+| Complexité d'automatisation | 15%   | Effort d’automatisation < 2 jours      |
+| ROI                         | 10%   | Gain de temps > 50% après 5 exécutions |
+
+En fonction du score final :
+
+| Score final | Décision           |
+| ----------- | ------------------ |
+| ≥ 70%       | Automatiser        |
+| 50–69%      | À analyser         |
+| < 50%       | Ne pas automatiser |
 
 ### 7.2 Scénarios Prioritaires
 
-**Automatises (Sprint 1-3) :**
+**Automatisés (Sprint 1-3) :**
 
-- Parcours de connexion/deconnexion (standard + 2FA)
-- Reinitialisation de mot de passe
+- Parcours de connexion/déconnexion (standard + 2FA)
+- Réinitialisation de mot de passe
 - Modification du mot de passe
-- Activation/desactivation 2FA
+- Activation/désactivation 2FA
 - Gestion des notifications (email/SMS)
-- Verification accessibilite (WCAG 2.1)
+- Vérification accessibilité (WCAG 2.1)
 
-**A automatiser (Sprint 4-5) :**
+**Á automatiser (Sprint 4-5) :**
 
 - Consultation du solde et historique
 - Virement simple entre comptes propres
-- Virement vers beneficiaire externe
+- Virement vers bénéficiaire externe
 - Paiement de factures
 
 **Ne pas automatiser :**
 
 - Tests exploratoires
-- Scénarios a donnees sensibles reelles
-- Fonctionnalités en cours de developpement
+- Scénarios à données sensibles réelles
+- Fonctionnalités en cours de développement
 - Tests visuels subjectifs (rendu graphique)
 
 ### 7.3 Checklist Avant Automatisation
 
-- [ ] Le scenario manuel est documente et valide
-- [ ] Les donnees de test sont identifiees
-- [ ] Les prerequis techniques sont disponibles (attributs `data-testid`)
-- [ ] Les critères d'acceptance sont définis
+- [ ] Le scénario manuel est documenté et valide
+- [ ] Les données de test sont identifiées
+- [ ] Les prérequis techniques sont disponibles (attributs `data-testid`)
+- [ ] Les critères d'acceptation sont définis
 - [ ] L'environnement de test est stable
 
 ---
