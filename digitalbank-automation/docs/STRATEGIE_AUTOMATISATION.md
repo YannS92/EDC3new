@@ -440,48 +440,54 @@ Le pipeline est compose de **2 jobs** :
 
 ### 8.3 Exécution Docker
 
+Les fonctions suivantes sont à exécuter à la racine du projet.
+
 ```bash
 # Exécution complete (9 configurations navigateur x viewport)
 docker-compose up --build
 
-# Exécution en arriere-plan
+# Exécution complète en arrière-plan
 docker-compose up --build -d
 docker-compose logs -f tests-chromium-desktop
 
-# Exécution d'une configuration specifique
-docker-compose run --rm tests-chromium-desktop
-docker-compose run --rm tests-firefox-mobile
-docker-compose run --rm tests-webkit-tablet
+# Exécution d'une configuration spécifique
+docker-compose run tests-chromium-desktop
+docker-compose run tests-firefox-mobile
+docker-compose run tests-webkit-tablet
 
-# Arret
+# Exécution d'une configuration spécifique avec tests spécifiés
+docker-compose run -e PYTEST_MARKERS="critical or regression or smoke" tests-chromium-mobile
+docker-compose run -e PYTEST_MARKERS="smoke" tests-firefox-mobile
+
+# Arrêt à la fin des tests
 docker-compose down
 ```
 
 Services disponibles : `tests-chromium-mobile`, `tests-chromium-tablet`, `tests-chromium-desktop`, `tests-webkit-mobile`, `tests-webkit-tablet`, `tests-webkit-desktop`, `tests-firefox-mobile`, `tests-firefox-tablet`, `tests-firefox-desktop`
 
-### 8.4 Rapports et Visibilite
+### 8.4 Rapports et Visibilité
 
 | Type             | Emplacement                                | Description                                     |
 | ---------------- | ------------------------------------------ | ----------------------------------------------- |
 | pytest-html      | `reports/report-{browser}-{viewport}.html` | Rapport HTML autonome par configuration         |
-| Allure           | `reports/allure-results/`                  | Donnees brutes JSON pour generation Allure      |
-| Screenshots      | `reports/screenshots/`                     | Captures automatiques uniquement en cas d'echec |
-| GitHub Artifacts | Actions > Artifacts                        | Rapports compresses - retention 30 jours        |
-| Commentaire PR   | Pull Request                               | Resume automatique des resultats sur chaque PR  |
+| Allure           | `reports/allure-results/`                  | Données brutes JSON pour génération Allure      |
+| Screenshots      | `reports/screenshots/`                     | Captures automatiques uniquement en cas d'échec |
+| GitHub Artifacts | Actions > Artifacts                        | Rapports compréssés - retention 30 jours        |
+| Commentaire PR   | Pull Request                               | Resumé automatique des résultats sur chaque PR  |
 
 ---
 
-## 9. Systeme de Gestion des Donnees
+## 9. Système de Gestion des Données
 
 ### 9.1 Architecture 3 Niveaux
 
 | Niveau         | Source                                | Usage                                                                                      |
 | -------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Statique**   | `test_users.json`                     | Donnees de reference (users, accounts, beneficiaires, factures) - reutilisables a l'infini |
-| **Dynamique**  | Factories Faker (`factories.py`)      | Generation de donnees realistes a la volee (noms, emails, IBAN francais)                   |
-| **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de donnees dediee par environnement, reconfigurable                                   |
+| **Statique**   | `test_users.json`                     | Données de référence (users, accounts, bénéficiaires, factures) - réutilisables a l'infini |
+| **Dynamique**  | Factories Faker (`factories.py`)      | Génération de données réalistes à la volée (noms, emails, IBAN français)                   |
+| **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de données dediée par environnement, reconfigurable                                   |
 
-### 9.2 Modeles de Donnees (ORM)
+### 9.2 Modèles de Données (ORM)
 
 5 modeles SQLAlchemy avec relations :
 
