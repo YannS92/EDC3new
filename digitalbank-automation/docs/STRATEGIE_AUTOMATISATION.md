@@ -202,11 +202,11 @@ Rapport : visualisable par toutes parties prenantes pour un retour rapide (mieux
 | UAT           | Tests fonctionnels et acceptance | Données anonymisées           | Par sprint            |
 | PREPROD       | Validation pré-production        | Clone production              | Hebdomadaire          |
 
+### 4.2 Configuration des Environnements
+
 Á cette étape du projet, seul les environnements de développement et docker sont disponibles, l'application n'étant pas encore déployée sur aucun des environnements.
 
 Il a donc été décidé de déployer l'application localement pour les tests, d'où l'environnement docker et local. Cette solution est temporaire, les cas de tests automatisés devraient normalement être exécutés sur l'environnement d'intégration et pas en local.
-
-### 4.2 Configuration des Environnements
 
 Fichier : `config/environments.yaml`
 
@@ -238,22 +238,23 @@ Paramètre flexible via `--env` : `pytest tests/ --env=uat`
 
 ---
 
-## 5. Outils d'Automatisation
+## 5. Framework d'Automatisation
 
-### 5.1 Stack Technique Retenue
+### 5.1 Stack Technique
 
 | Catégorie               | Outil                       | Version    | Justification                                                                                      |
 | ----------------------- | --------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
-| **Framework Web**       | Playwright                  | 1.42.0     | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, moins de configuration |
-| **Langage**             | Python                      | 3.10       | Lisibilité, bibliothèques riches, courbe d'apprentissage faible                                    |
+| **Langage**             | python                      | 3.10       | Lisibilité, bibliothèques riches, courbe d'apprentissage faible                                    |
+| **Framework Web**       | playwright                  | 1.42.0     | Multi-navigateur natif (Chromium/Firefox/WebKit), plus rapide que Selenium, moins de configuration |
 | **Framework Test**      | pytest                      | 8.0        | Fixtures, paramétrisation, plugins, markers                                                        |
 | **BDD**                 | pytest-bdd                  | 7.0        | Gherkin natif en français, intégration pytest                                                      |
+| **Parallélisation**     | pytest-xdist                | 3.5        | Exécution en parallèle des tests                                                                   |
+| **Relances des échecs** | pytest-rerunfailures        | 16.1       | Relances des tests en échec pour éviter les erreurs dues à l'instabilité de l'environnement        |
+| **Reporting**           | pytest-html + allure-pytest | 4.1 / 2.13 | Rapport HTML autonome + données Allure pour dashboards                                             |
 | **Tests Accessibilité** | axe-playwright-python       | latest     | Référence WCAG 2.1, intégration Playwright                                                         |
-| **Reporting**           | pytest-html + Allure        | 4.1 / 2.13 | Rapport HTML autonome + données Allure pour dashboards                                             |
+| **Gestion Données**     | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Génération de données réalistes, ORM, isolation par environnement                                  |
 | **CI/CD**               | GitHub Actions + Docker     | -          | Intégration native GitHub, containerisation reproductible                                          |
-| **Gestion Données**     | Faker + SQLAlchemy + SQLite | 22.0 / 2.0 | Génération données réalistes, ORM, isolation par env                                               |
-| **Containerisation**    | Docker Compose              | -          | Orchestration webapp (nginx) + 9 conteneurs de test                                                |
-| **Parallélisation**     | pytest-xdist                | 3.5        | Exécution en parallèle des tests au sein d'un conteneur                                            |
+| **Containerisation**    | Docker Compose              | -          | Orchestration webapp (nginx) avec 9 conteneurs de test pour simple configuration et stabilité      |
 
 ### 5.2 Architecture du Framework
 
@@ -296,9 +297,15 @@ digitalbank-automation/
 └── conftest.py                 # Configuration pytest globale (fixtures, hooks, BDD)
 ```
 
-### 5.3 Pattern Page Object Model (POM)
+### 5.3 Pattern de Conception
 
-Toutes les pages héritent de `BasePage` qui fournit :
+En plus du patron Flow-Model intégré par la méthode du Behavior-Driven Development, on va utiliser un autre modèle très utile :
+
+- Le Page-Object Model (POM)
+
+Cette méthode fournit une structure maintenable sans répétitions.
+
+Techniquement, on a implémenté des pages de l'interface en script Python et toutes ces pages héritent de `BasePage` qui fournit :
 
 - Attentes implicites Playwright (`locator.wait_for()`, `wait_for_function()`)
 - Actions communes (`click`, `enter_text`, `get_text`)
@@ -306,7 +313,7 @@ Toutes les pages héritent de `BasePage` qui fournit :
 - Capture de screenshots pour Allure (`_capture_screenshot`)
 - Support `dispatch_event("click")` pour les éléments cachés par CSS
 
-Les locators utilisent des sélecteurs CSS avec attributs `data-testid` pour la stabilité, decouplées du DOM.
+Les sélecteurs utilisent des attributs dédiés (`data-testid`) afin de garantir la stabilité des tests et de limiter leur dépendance à la structure du DOM.
 
 ---
 
@@ -325,7 +332,7 @@ Les locators utilisent des sélecteurs CSS avec attributs `data-testid` pour la 
 
 ### 6.2 Couverture Actuelle par Module
 
-| Module                                                 | Tests Fonctionnels | Tests BDD   | Priorité      | Statut           |
+| Module / Feature                                       | Tests Fonctionnels | Tests BDD   | Priorité      | Statut           |
 | ------------------------------------------------------ | ------------------ | ----------- | ------------- | ---------------- |
 | Authentification (login, 2FA, logout, reset)           | 12 tests           | 8 scénarios | P1 - Critique | Implementé       |
 | Paramètres Securité (mot de passe, 2FA, notifications) | 11 tests           | 6 scénarios | P2 - Haute    | Implementé       |
