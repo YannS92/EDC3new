@@ -1,6 +1,5 @@
 name: DigitalBank - Tests Automatises
 
-# Supprimer ça, le dispatcher entre les différents jobs à la place, pour remplir les rôle de la stratégie d'automatisation
 on:
   push:
     branches: [ main, develop ]
@@ -13,9 +12,32 @@ on:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
-  # Exécution des tests
+  # Dispatcher : détermine quels jobs exécuter selon l'événement
+  # ═══════════════════════════════════════════════════════════════
+  dispatcher:
+    runs-on: ubuntu-latest
+    outputs:
+      run-smoke:    ${{ steps.dispatch.outputs.run-smoke }}
+      run-complete: ${{ steps.dispatch.outputs.run-complete }}
+    steps:
+      - name: Determine jobs to run
+        id: dispatch
+        run: |
+          EVENT="${{ github.event_name }}"
+          if [[ "$EVENT" == "push" || "$EVENT" == "pull_request" ]]; then
+            echo "run-smoke=true"    >> $GITHUB_OUTPUT
+            echo "run-complete=false" >> $GITHUB_OUTPUT
+          else
+            echo "run-smoke=false"   >> $GITHUB_OUTPUT
+            echo "run-complete=true" >> $GITHUB_OUTPUT
+          fi
+
+  # ═══════════════════════════════════════════════════════════════
+  # Smoke tests — push / pull request
   # ═══════════════════════════════════════════════════════════════
   tests-smoke:
+    needs: dispatcher
+    if: needs.dispatcher.outputs.run-smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -32,6 +54,7 @@ jobs:
       - name: Check exit codes
         if: always()
         run: |
+          FAIL=0
           for CID in $(docker compose ps -aq); do
             EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
             NAME=$(docker inspect $CID --format='{{.Name}}')
@@ -40,6 +63,7 @@ jobs:
               FAIL=1
             fi
           done
+          exit $FAIL
 
       - name: Upload Reports
         if: always()
@@ -53,9 +77,14 @@ jobs:
         if: always()
         run: docker compose down -v
 
+  # ═══════════════════════════════════════════════════════════════
+  # Complete tests — journalier / manuel
+  # ═══════════════════════════════════════════════════════════════
   tests-complete:
+    needs: dispatcher
+    if: needs.dispatcher.outputs.run-complete == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout du code
@@ -94,6 +123,7 @@ jobs:
       - name: Check exit codes
         if: always()
         run: |
+          FAIL=0
           for CID in $(docker compose ps -aq); do
             EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
             NAME=$(docker inspect $CID --format='{{.Name}}')
@@ -102,6 +132,7 @@ jobs:
               FAIL=1
             fi
           done
+          exit $FAIL
 
       - name: Upload Reports
         if: always()
@@ -114,4 +145,3 @@ jobs:
       - name: Stop containers
         if: always()
         run: docker compose down -v
-
