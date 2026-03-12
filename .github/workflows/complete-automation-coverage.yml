@@ -12,32 +12,10 @@ on:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
-  # Dispatcher : détermine quels jobs exécuter selon l'événement
-  # ═══════════════════════════════════════════════════════════════
-  dispatcher:
-    runs-on: ubuntu-latest
-    outputs:
-      run-smoke:    ${{ steps.dispatch.outputs.run-smoke }}
-      run-complete: ${{ steps.dispatch.outputs.run-complete }}
-    steps:
-      - name: Determine jobs to run
-        id: dispatch
-        run: |
-          EVENT="${{ github.event_name }}"
-          if [[ "$EVENT" == "push" || "$EVENT" == "pull_request" ]]; then
-            echo "run-smoke=true"    >> $GITHUB_OUTPUT
-            echo "run-complete=false" >> $GITHUB_OUTPUT
-          else
-            echo "run-smoke=false"   >> $GITHUB_OUTPUT
-            echo "run-complete=true" >> $GITHUB_OUTPUT
-          fi
-
-  # ═══════════════════════════════════════════════════════════════
   # Smoke tests — push / pull request
   # ═══════════════════════════════════════════════════════════════
   tests-smoke:
-    needs: dispatcher
-    if: needs.dispatcher.outputs.run-smoke == 'true'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -81,8 +59,7 @@ jobs:
   # Complete tests — journalier / manuel
   # ═══════════════════════════════════════════════════════════════
   tests-complete:
-    needs: dispatcher
-    if: needs.dispatcher.outputs.run-complete == 'true'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
