@@ -35,6 +35,7 @@ services:
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
+    image: digitalbank-tests:latest
     build:
       context: ./digitalbank-automation
       dockerfile: Dockerfile
@@ -57,9 +58,7 @@ services:
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-webkit-tablet
     depends_on:
       webapp:
@@ -79,9 +78,7 @@ services:
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-firefox-desktop
     depends_on:
       webapp:
@@ -98,13 +95,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="regression or smoke or critical"
+      - PYTEST_TAGS="regression or smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-chromium-desktop
     depends_on:
       webapp:
@@ -121,13 +116,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="regression or smoke or critical"
+      - PYTEST_TAGS="regression or smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-webkit-mobile
     depends_on:
       webapp:
@@ -144,13 +137,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="smoke or critical"
+      - PYTEST_TAGS="smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-chromium-tablet
     depends_on:
       webapp:
@@ -167,13 +158,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="smoke or critical"
+      - PYTEST_TAGS="smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-webkit-desktop
     depends_on:
       webapp:
@@ -190,13 +179,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="smoke"
+      - PYTEST_TAGS="smoke"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-firefox-mobile
     depends_on:
       webapp:
@@ -213,13 +200,11 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_MARKERS="smoke"
+      - PYTEST_TAGS="smoke"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
-    build:
-      context: ./digitalbank-automation
-      dockerfile: Dockerfile
+    image: digitalbank-tests:latest
     container_name: digitalbank-tests-firefox-tablet
     depends_on:
       webapp:
