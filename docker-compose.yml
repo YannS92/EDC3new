@@ -98,7 +98,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="regression or smoke or critical"
+      - PYTEST_MARKERS="regression or smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
@@ -121,7 +121,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="regression or smoke or critical"
+      - PYTEST_MARKERS="regression or smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
@@ -144,7 +144,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="smoke or critical"
+      - PYTEST_MARKERS="smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
@@ -167,7 +167,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="smoke or critical"
+      - PYTEST_MARKERS="smoke or critical"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
@@ -190,7 +190,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="smoke"
+      - PYTEST_MARKERS="smoke"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
@@ -213,7 +213,7 @@ services:
       - PYTHONPATH=/app
       - ENV=docker
       - PARALLEL_PROCESSES=auto
-      - PYTEST_TAGS="smoke"
+      - PYTEST_MARKERS="smoke"
       - REPORT_DIR=reports
       - RERUN_NB=1
       - RERUN_DELAY=2
