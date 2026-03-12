@@ -368,13 +368,17 @@ Un scénario est éligible à l'automatisation s'il répond aux critères suivan
 | Complexité d'automatisation | 15%   | Effort d’automatisation < 2 jours      |
 | ROI                         | 10%   | Gain de temps > 50% après 5 exécutions |
 
-En fonction du score final :
+**Interprétation du Score :**
 
-| Score final | Décision           |
-| ----------- | ------------------ |
-| ≥ 70%       | Automatiser        |
-| 50–69%      | À analyser         |
-| < 50%       | Ne pas automatiser |
+Chaque critère contribue au score total selon son poids.
+
+Score final = somme des poids des critères remplis.
+
+| Score total | Décision                                   |
+| ----------- | ------------------------------------------ |
+| ≥ 70%       | Scénario prioritaire pour l'automatisation |
+| 50–69%      | Automatisation à évaluer selon le contexte |
+| < 50%       | Automatisation non prioritaire             |
 
 ### 7.2 Scénarios Prioritaires
 
