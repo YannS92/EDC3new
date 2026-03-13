@@ -92,12 +92,12 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
           body: |
             ### Résultat des Smoke Tests
             - **Service testé :** `${{ steps.random.outputs.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Regression Tests — Daily
@@ -147,12 +147,12 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
           body: |
             ### Résultat des Regression Tests
             - **Service testé :** `${{ steps.random.outputs.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Complete Tests for Production-Ready Application — Manual
@@ -214,12 +214,12 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
           body: |
             ### Résultat des Production Tests
             - **Service testé :** `${{ matrix.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Cleanup
