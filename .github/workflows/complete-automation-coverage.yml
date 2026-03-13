@@ -24,12 +24,13 @@ jobs:
   # ═══════════════════════════════════════════════
   build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
+  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker images
+      - name: Build Docker images in parallel
         run: docker compose build --parallel
 
       - name: Export image
@@ -47,19 +48,10 @@ jobs:
   # ═══════════════════════════════════════════════════════════════
   tests-smoke:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Download image
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-
-      - name: Load image
-        run: docker load < digitalbank-tests.tar
-
       - name: Select random main config
         id: random
         run: |
@@ -70,6 +62,9 @@ jobs:
 
       - name: Checkout du code
         uses: actions/checkout@v4
+
+      - name: Build all Docker images in parallel
+        run: docker compose build --parallel
 
       - name: Run Smoke Tests on ${{ steps.random.outputs.service }}
         run: docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
@@ -91,19 +86,10 @@ jobs:
   # ═══════════════════════════════════════════════════════════════
   tests-regression:
     if: github.event_name == 'schedule'
-    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Download image
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-
-      - name: Load image
-        run: docker load < digitalbank-tests.tar
-
       - name: Select random main config
         id: random
         run: |
@@ -114,6 +100,9 @@ jobs:
 
       - name: Checkout du code
         uses: actions/checkout@v4
+
+      - name: Build all Docker images in parallel
+        run: docker compose build --parallel
 
       - name: Run Regression Tests on ${{ steps.random.outputs.service }}
         run: docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
@@ -180,23 +169,15 @@ jobs:
         if: always()
         run: docker compose down -v
 
-  # ═════════════════════════════════════════════════════════════════
-  # Cleanup — dernière étape du workflow pour supprimer l’artefact Docker
-  # Explication : 
-  # Le rebuild dans chaque job est plus rapide, on l'extrait pour la scalabilité.
-  # On prévoit plus de jobs dont certains qui vont s’exécuter en parallèle
-  # (tests-accessibility/tests-performance/tests-critical/...).
-  # ═════════════════════════════════════════════════════════════════
+  # ═══════════════════════════════════════════════════════════════
+  # Cleanup
+  # ═══════════════════════════════════════════════════════════════
   cleanup:
     runs-on: ubuntu-latest
     needs:
-      - tests-smoke
-      - tests-regression
       - tests-production
-    if: always()
     steps:
       - name: Delete Docker image artifact
-        if: always()
         uses: geekyeggo/delete-artifact@v5
         with:
           name: docker-image
