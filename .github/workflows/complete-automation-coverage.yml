@@ -193,6 +193,7 @@ jobs:
       - tests-smoke
       - tests-regression
       - tests-production
+    if: always()
     steps:
       - name: Delete Docker image artifact
         if: always()
