@@ -23,6 +23,10 @@ name: DigitalBank - Tests Automatises
 # pour smoke et regression (un par navigateur principal).
 # tests-production couvre les 9 combinaisons browser × viewport.
 # ═══════════════════════════════════════════════════════════════════════
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 on:
   push:
@@ -94,10 +98,11 @@ jobs:
       - name: Run Smoke Tests on ${{ steps.random.outputs.service }}
         id: run-tests
         run: |
-          set -o pipefail
           docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-          echo "EXIT CODE $?"
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "EXIT CODE $EXIT_CODE"
+          exit $EXIT_CODE
 
       - name: Upload Reports
         if: always()
@@ -149,10 +154,11 @@ jobs:
       - name: Run Regression Tests on ${{ steps.random.outputs.service }}
         id: run-tests
         run: |
-          set -o pipefail
           docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-          echo "EXIT CODE $?"
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "EXIT CODE $EXIT_CODE"
+          exit $EXIT_CODE
 
       - name: Upload Reports
         if: always()
@@ -216,10 +222,11 @@ jobs:
       - name: Run Tests on ${{ matrix.service }}
         id: run-tests
         run: |
-          set -o pipefail
           docker compose run ${{ matrix.service }}
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-          echo "EXIT CODE $?"
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "EXIT CODE $EXIT_CODE"
+          exit $EXIT_CODE
 
       - name: Upload Reports
         if: always()
