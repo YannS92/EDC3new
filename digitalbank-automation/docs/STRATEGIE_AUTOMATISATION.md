@@ -14,7 +14,7 @@ Ce document définit la stratégie d'automatisation des tests pour l'application
 | --------------------- | ------------------------------------- | ------------------------- | -------------- |
 | Tests Fonctionnels    | Validation des parcours utilisateur   | Oui (Playwright + pytest) | Implemente     |
 | Tests BDD             | Scénarios Gherkin en francais         | Oui (pytest-bdd)          | Implemente     |
-| Tests de Regression   | Verification de non-regression        | Oui (Suite complete)      | Implemente     |
+| Tests de Regression   | Verification de non-regression        | Oui (Suite complète)      | Implemente     |
 | Tests d'Accessibilite | Conformite WCAG 2.1                   | Oui (axe-core)            | Implemente     |
 | Tests Unitaires       | Validation des composants individuels | Hors perimetre            | -              |
 | Tests de Performance  | Charge et temps de reponse            | Prevus (Sprint 6)         | Non implemente |
@@ -422,44 +422,65 @@ Score final = somme des poids des critères remplis.
 
 ### 8.1 Pipeline GitHub Actions
 
-Fichier : `.github/workflows/complete-automation-coverage.yml`
+Le pipeline est composé de **3 jobs** principaux et 2 jobs d'optimisation :
 
-Le pipeline est compose de **2 jobs** :
+| Job                  | Description                                                                                  | Dépendance       | Timeout |
+| -------------------- | -------------------------------------------------------------------------------------------- | ---------------- | ------- |
+| **tests-smoke**      | Exécution des smoke tests sur un des 3 conteneurs principaux                                 | -                | 10 min  |
+| **tests-regression** | Exécution des tests de régression sur un des 3 conteneurs principaux                         | -                | 10 min  |
+| **build**            | Construction de l'image docker pour gagner du temps sur les exécutions parallèles            | -                | 10 min  |
+| **tests-production** | Exécution des tests optimisés pour un maximum de couverture sur un maximum de configurations | build            | 30 min  |
+| **cleanup**          | Suppression de l'image docker pour gagner de la place de stockage                            | tests-production | 10 min  |
 
-| Job                 | Description                                                                                            | Dependance | Timeout |
-| ------------------- | ------------------------------------------------------------------------------------------------------ | ---------- | ------- |
-| **tests**           | Build des 9 images Docker en parallèle, puis exécution sequentielle des 9 conteneurs de test           | -          | 10 min  |
-| **publish-results** | Post un commentaire automatique sur les PR/commits avec tableau de synthese et lien vers les artifacts | tests      | -       |
+Le concept des conteneurs principaux est née de l'approche éco-conception. Ils sont un moyen d'avoir des exécutions sur chacun des environnements et configurations les plus importants sans les faire tous à chaque fois et ainsi gagner en temps et en puissance de calcul.
 
-### 8.2 Declencheurs
+Ce sous-ensemble correspont aux containers qui lancent tous les tests par défaut dans le fichier `docker-compose.yml` comme précisé dans la partie 2.3.
 
-| Evenement                    | Action                                                |
-| ---------------------------- | ----------------------------------------------------- |
-| Push sur `main` ou `develop` | Exécution automatique                                 |
-| Pull Request vers `main`     | Exécution automatique (bloquant) + commentaire resume |
-| Cron `0 23 * * 0-4`          | Exécution quotidienne a 00h00 Paris (lundi-vendredi)  |
-| Manuel (`workflow_dispatch`) | Exécution à la demande depuis l'interface GitHub      |
+Ils représentent donc les services :
+
+- tests-chromium-mobile
+- tests-webkit-tablet
+- tests-firefox-desktop
+
+### 8.2 Déclencheurs
+
+| Événement                    | Action                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Push sur `main` ou `develop` | Exécution du job tests-smoke                                             |
+| Pull Request vers `main`     | Exécution du job tests-smoke                                             |
+| Cron `0 23 * * 1-5`          | Exécution quotidienne à 00h00 (lundi-vendredi) du job tests-regression   |
+| Manuel (`workflow_dispatch`) | Exécution à la demande depuis l'interface GitHub du job tests-production |
+
+En procédant de cette manière, on obtient une pipeline optimisée où :
+
+- les jobs les plus lourds sont exécutés moins régulièrement
+- les jobs les plus légers sont exécutés plus régulièrement
 
 ### 8.3 Exécution Docker
 
-Les fonctions suivantes sont à exécuter à la racine du projet.
+Les fonctions suivantes sont une liste non-exhaustive de fonctions utiles pour lancer les tests en utilisant docker.
+
+Elles sont à exécuter à la racine du projet.
 
 ```bash
-# Exécution complete (9 configurations navigateur x viewport)
+# Exécution complète (9 configurations navigateur x viewport)
 docker-compose up --build
 
 # Exécution complète en arrière-plan
 docker-compose up --build -d
 docker-compose logs -f tests-chromium-desktop
 
-# Exécution d'une configuration spécifique
+# Exécution d'un service spécifique
 docker-compose run tests-chromium-desktop
 docker-compose run tests-firefox-mobile
 docker-compose run tests-webkit-tablet
 
-# Exécution d'une configuration spécifique avec tests spécifiés
+# Exécution d'un service spécifique avec tests spécifiés
 docker-compose run -e PYTEST_MARKERS="critical or regression or smoke" tests-chromium-mobile
 docker-compose run -e PYTEST_MARKERS="smoke" tests-firefox-mobile
+
+# Exécution d'un service spécifique avec tous les tests
+docker-compose run -e PYTEST_MARKERS="" tests-chromium-tablet
 
 # Arrêt à la fin des tests
 docker-compose down
@@ -478,8 +499,7 @@ Services disponibles :
 | pytest-html      | `reports/report-{browser}-{viewport}.html` | Rapport HTML autonome par configuration         |
 | Allure           | `reports/allure-results/`                  | Données brutes JSON pour génération Allure      |
 | Screenshots      | `reports/screenshots/`                     | Captures automatiques uniquement en cas d'échec |
-| GitHub Artifacts | Actions > Artifacts                        | Rapports compréssés - retention 30 jours        |
-| Commentaire PR   | Pull Request                               | Resumé automatique des résultats sur chaque PR  |
+| GitHub Artifacts | Actions > Artifacts                        | Rapports compressés - rétention de 30 jours     |
 
 ---
 
@@ -623,7 +643,7 @@ En cas de version defaillante, le processus de rollback est le suivant :
 | ---------------------------------------------- | ------------- | -------------------------------------------------- |
 | Couverture automatisee (modules critiques)     | > 70%         | ~40% (2/5 modules implementes)                     |
 | Taux de reussite                               | > 95%         | ~97% (40 passed, 1 xpassed, 1 error intermittente) |
-| Temps d'exécution suite complete (1 conteneur) | < 10 minutes  | ~6 minutes                                         |
+| Temps d'exécution suite complète (1 conteneur) | < 10 minutes  | ~6 minutes                                         |
 | Faux positifs (reruns reussis)                 | < 5%          | < 5%                                               |
 | Couverture navigateurs                         | 3 navigateurs | Chromium + Firefox + WebKit                        |
 | Couverture viewports                           | 3 viewports   | Mobile + Tablet + Desktop                          |
