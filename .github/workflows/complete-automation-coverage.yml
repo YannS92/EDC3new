@@ -68,7 +68,11 @@ jobs:
         run: docker compose build --parallel
 
       - name: Run Smoke Tests on ${{ steps.random.outputs.service }}
-        run: docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
+        id: run-tests
+        run: |
+          set -o pipefail
+          docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Upload Reports
         if: always()
@@ -81,6 +85,17 @@ jobs:
       - name: Stop containers
         if: always()
         run: docker compose down -v
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Résultat des Smoke Tests
+            - **Service testé :** `${{ steps.random.outputs.service }}`
+            - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
+            - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   # ═══════════════════════════════════════════════════════════════
   # Regression Tests — Daily
@@ -106,7 +121,11 @@ jobs:
         run: docker compose build --parallel
 
       - name: Run Regression Tests on ${{ steps.random.outputs.service }}
-        run: docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
+        id: run-tests
+        run: |
+          set -o pipefail
+          docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Upload Reports
         if: always()
@@ -119,6 +138,17 @@ jobs:
       - name: Stop containers
         if: always()
         run: docker compose down -v
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Résultat des Regression Tests
+            - **Service testé :** `${{ steps.random.outputs.service }}`
+            - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
+            - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   # ═══════════════════════════════════════════════════════════════
   # Complete Tests for Production-Ready Application — Manual
@@ -156,7 +186,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Tests on ${{ matrix.service }}
-        run: docker compose run ${{ matrix.service }}
+        id: run-tests
+        run: |
+          set -o pipefail
+          docker compose run ${{ matrix.service }}
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Upload Reports
         if: always()
@@ -169,6 +203,17 @@ jobs:
       - name: Stop containers
         if: always()
         run: docker compose down -v
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Résultat des Production Tests
+            - **Service testé :** `${{ matrix.service }}`
+            - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
+            - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   # ═══════════════════════════════════════════════════════════════
   # Cleanup
