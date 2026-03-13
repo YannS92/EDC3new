@@ -2,11 +2,11 @@
 
 ## 1. Introduction
 
-Ce document définit la stratégie d'automatisation des tests pour l'application bancaire DigitalBank. L'objectif est d'améliorer la qualité du produit et de reduire le temps de livraison en automatisant les tests critiques dans le cadre d'une methodologie **Agile** avec des sprints de deux semaines.
+Ce document définit la stratégie d'automatisation des tests pour l'application bancaire DigitalBank. L'objectif est d'améliorer la qualité du produit et de reduire le temps de livraison en automatisant les tests critiques dans le cadre d'une méthodologie **Agile** avec des sprints de deux semaines.
 
 ---
 
-## 2. Perimetre de l'Automatisation
+## 2. Périmètre de l'Automatisation
 
 ### 2.1 Types de Tests et Couverture d'Automatisation
 
@@ -667,21 +667,21 @@ Les résultats sont visibles via :
 
 ## 13. Gouvernance
 
-### 13.1 Roles et Responsabilites
+### 13.1 Rôles et Responsabilités
 
 | Role                | Responsabilite                                   |
 | ------------------- | ------------------------------------------------ |
 | Test Lead           | Stratégie, priorisation, reporting               |
-| Automation Engineer | Developpement et maintenance scripts             |
-| Developpeur         | Revue code, testabilite, attributs `data-testid` |
-| Product Owner       | Validation critères acceptance                   |
+| Automation Engineer | Développement et maintenance scripts             |
+| Développeur         | Revue code, testabilité, attributs `data-testid` |
+| Product Owner       | Validation des critères acceptance               |
 
 ### 13.2 Processus de Revue
 
 1. Tout nouveau script passe par une **Pull Request**
 2. Revue obligatoire par un pair (convention POM, docstrings, markers)
 3. Tests de validation sur environnement Docker local
-4. Merge sur `main` après approbation + tests CI passes
+4. Merge sur `main` après approbation + tests CI passés
 
 ---
 
@@ -691,16 +691,16 @@ Les résultats sont visibles via :
 
 - **CI/CD** : Continuous Integration / Continuous Deployment
 - **WCAG** : Web Content Accessibility Guidelines
-- **RGPD** : Reglement General sur la Protection des Donnees
+- **RGPD** : Règlement Général sur la Protection des Données
 - **2FA** : Two-Factor Authentication
 - **POM** : Page-Object Model
 - **BDD** : Behavior-Driven Development
 - **ROI** : Return On Investment
 - **SPA** : Single Page Application
-- **Shift Left** : Pratique consistant a tester plus tot dans le cycle de developpement
+- **Shift-Left** : Pratique consistant à tester plus tôt dans le cycle de développement
 - **Headless** : Exécution du navigateur sans interface graphique
 
-### 14.2 References
+### 14.2 Références
 
 - [Documentation Playwright Python](https://playwright.dev/python/docs/intro)
 - [Guide pytest](https://docs.pytest.org/)
