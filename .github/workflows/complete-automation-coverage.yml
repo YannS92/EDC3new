@@ -97,6 +97,7 @@ jobs:
             - **Service testé :** `${{ steps.random.outputs.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Regression Tests — Daily
@@ -151,6 +152,7 @@ jobs:
             - **Service testé :** `${{ steps.random.outputs.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Complete Tests for Production-Ready Application — Manual
@@ -217,6 +219,7 @@ jobs:
             - **Service testé :** `${{ matrix.service }}`
             - **Statut :** ${{ steps.run-tests.outputs.exit_code == '0' && '✅ Succès' || '❌ Échec' }}
             - [Télécharger les rapports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          append: true
 
   # ═══════════════════════════════════════════════════════════════
   # Cleanup
