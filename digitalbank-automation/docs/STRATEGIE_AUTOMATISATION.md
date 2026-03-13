@@ -12,13 +12,13 @@ Ce document définit la stratégie d'automatisation des tests pour l'application
 
 | Phase                 | Description                           | Automatisation            | Statut         |
 | --------------------- | ------------------------------------- | ------------------------- | -------------- |
-| Tests Fonctionnels    | Validation des parcours utilisateur   | Oui (Playwright + pytest) | Implemente     |
-| Tests BDD             | Scénarios Gherkin en francais         | Oui (pytest-bdd)          | Implemente     |
-| Tests de Regression   | Verification de non-regression        | Oui (Suite complète)      | Implemente     |
-| Tests d'Accessibilite | Conformite WCAG 2.1                   | Oui (axe-core)            | Implemente     |
+| Tests Fonctionnels    | Validation des parcours utilisateur   | Oui (Playwright + pytest) | Implementé     |
+| Tests BDD             | Scénarios Gherkin en français         | Oui (pytest-bdd)          | Implementé     |
+| Tests de Régression   | Vérification de non-régression        | Oui (Suite complète)      | Implementé     |
+| Tests d'Accessibilité | Conformité WCAG 2.1                   | Oui (axe-core)            | Implementé     |
 | Tests Unitaires       | Validation des composants individuels | Hors perimetre            | -              |
-| Tests de Performance  | Charge et temps de reponse            | Prevus (Sprint 6)         | Non implemente |
-| Tests de Securite     | Vulnerabilités OWASP                  | Prevus (Sprint futur)     | Non implemente |
+| Tests de Performance  | Charge et temps de réponse            | Prevus (Sprint 6)         | Non implementé |
+| Tests de Securité     | Vulnerabilités OWASP                  | Prevus (Sprint futur)     | Non implementé |
 
 ### 2.2 Couverture par Types de Tests
 
@@ -509,6 +509,10 @@ Services disponibles :
 | **Statique**   | `test_users.json`                     | Données de référence (users, accounts, bénéficiaires, factures) - réutilisables a l'infini |
 | **Dynamique**  | Factories Faker (`factories.py`)      | Génération de données réalistes à la volée (noms, emails, IBAN français)                   |
 | **Persistant** | SQLite via SQLAlchemy (`database.py`) | Base de données dediée par environnement, reconfigurable                                   |
+
+Remarque : Bien que le système de génération et de gestion des données soit pleinement implémenté pour tous les niveaux (statique, dynamique et persistant), les tests actuels utilisent principalement les données statiques.
+
+L’intégration des données dynamiques et persistantes dans les tests automatisés est prévue pour les versions futures afin d’augmenter la couverture et le réalisme des scénarios de test.
 
 ### 9.2 Modèles de Données (ORM)
 
