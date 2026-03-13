@@ -7,15 +7,37 @@ on:
     branches: [ main ]
   schedule:
     # Execution quotidienne a 00h00 heure de Paris (23h00 UTC la veille)
-    - cron: '0 23 * * 0-4'
+    - cron: '0 23 * * 1-5'
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  CONTAINER_MAIN_SERVICES: tests-chromium-mobile tests-webkit-tablet tests-firefox-desktop
+
 jobs:
+
+  # ═══════════════════════════════════════════════
+  # Build images
+  # ═══════════════════════════════════════════════
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build --parallel
+
   # ═══════════════════════════════════════════════════════════════
   # Smoke tests — push / pull request
   # ═══════════════════════════════════════════════════════════════
   tests-smoke:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -23,29 +45,16 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Build images Docker
-        run: docker compose build --parallel
-
-      - name: Run Tests on Random Main Config
+      - name: Select random main config
+        id: random
         run: |
-          SERVICES=("tests-chromium-mobile" "tests-webkit-tablet" "tests-firefox-desktop")
+          SERVICES=($CONTAINER_MAIN_SERVICES)
           RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
+          echo "service=$RANDOM_SERVICE" >> $GITHUB_OUTPUT
           echo "Selected service: $RANDOM_SERVICE"
-          docker compose run -e PYTEST_MARKERS="smoke" $RANDOM_SERVICE
 
-      - name: Check exit codes
-        if: always()
-        run: |
-          FAIL=0
-          for CID in $(docker compose ps -aq); do
-            EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
-            NAME=$(docker inspect $CID --format='{{.Name}}')
-            echo "$NAME -> $EXIT_CODE"
-            if [ "$EXIT_CODE" != "0" ]; then
-              FAIL=1
-            fi
-          done
-          exit $FAIL
+      - name: Run Smoke Tests
+        run: docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
 
       - name: Upload Reports
         if: always()
@@ -64,6 +73,7 @@ jobs:
   # ═══════════════════════════════════════════════════════════════
   tests-regression:
     if: github.event_name == 'schedule'
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -71,35 +81,22 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Build images Docker
-        run: docker compose build --parallel
-
-      - name: Run Tests on Random Main Config
+      - name: Select random main config
+        id: random
         run: |
-          SERVICES=("tests-chromium-mobile" "tests-webkit-tablet" "tests-firefox-desktop")
+          SERVICES=($CONTAINER_MAIN_SERVICES)
           RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
+          echo "service=$RANDOM_SERVICE" >> $GITHUB_OUTPUT
           echo "Selected service: $RANDOM_SERVICE"
-          docker compose run -e PYTEST_MARKERS="regression" $RANDOM_SERVICE
 
-      - name: Check exit codes
-        if: always()
-        run: |
-          FAIL=0
-          for CID in $(docker compose ps -aq); do
-            EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
-            NAME=$(docker inspect $CID --format='{{.Name}}')
-            echo "$NAME -> $EXIT_CODE"
-            if [ "$EXIT_CODE" != "0" ]; then
-              FAIL=1
-            fi
-          done
-          exit $FAIL
+      - name: Run Regression Tests
+        run: docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
 
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-tests-smoke
+          name: reports-tests-regression
           path: digitalbank-automation/reports
           retention-days: 30
 
@@ -112,62 +109,36 @@ jobs:
   # ═══════════════════════════════════════════════════════════════
   tests-production:
     if: github.event_name == 'workflow_dispatch'
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - tests-chromium-mobile
+          - tests-firefox-desktop
+          - tests-webkit-tablet
+          - tests-chromium-desktop
+          - tests-webkit-mobile
+          - tests-webkit-desktop
+          - tests-chromium-tablet
+          - tests-firefox-mobile
+          - tests-firefox-tablet
 
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Build images Docker
-        run: docker compose build --parallel
-
-      - name: Run Chromium Mobile
-        run: docker compose run tests-chromium-mobile
-
-      - name: Run Firefox Desktop
-        run: docker compose run tests-firefox-desktop
-
-      - name: Run Webkit Tablet
-        run: docker compose run tests-webkit-tablet
-
-      - name: Run Chromium Desktop
-        run: docker compose run tests-chromium-desktop
-
-      - name: Run Webkit Mobile
-        run: docker compose run tests-webkit-mobile
-
-      - name: Run Webkit Desktop
-        run: docker compose run tests-webkit-desktop
-
-      - name: Run Chromium Tablet
-        run: docker compose run tests-chromium-tablet
-
-      - name: Run Firefox Mobile
-        run: docker compose run tests-firefox-mobile
-
-      - name: Run Firefox Tablet
-        run: docker compose run tests-firefox-tablet
-
-      - name: Check exit codes
-        if: always()
-        run: |
-          FAIL=0
-          for CID in $(docker compose ps -aq); do
-            EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
-            NAME=$(docker inspect $CID --format='{{.Name}}')
-            echo "$NAME -> $EXIT_CODE"
-            if [ "$EXIT_CODE" != "0" ]; then
-              FAIL=1
-            fi
-          done
-          exit $FAIL
+      - name: Run ${{ matrix.service }}
+        run: docker compose run ${{ matrix.service }}
 
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-tests-complete
+          name: reports-tests-production
           path: digitalbank-automation/reports
           retention-days: 30
 
