@@ -1,5 +1,10 @@
 name: DigitalBank - Tests Automatises
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 on:
   push:
     branches: [ main, develop ]
