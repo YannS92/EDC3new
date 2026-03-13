@@ -1,6 +1,24 @@
 # Docker Compose - DigitalBank
-# Frontend (nginx) + 9 conteneurs de tests (3 browsers x 3 viewports)
-# Les variables d'environnement sont lues par entrypoint.sh au démarrage du conteneur
+# ─────────────────────────────────────────────────────────────────────
+# Architecture : 1 service webapp (nginx) + 9 conteneurs de tests
+# Combinaisons : 3 navigateurs (chromium, firefox, webkit)
+#              × 3 viewports  (mobile, tablet, desktop)
+#
+# Variables d'environnement clés (lues par le Dockerfile ENTRYPOINT) :
+#   BROWSER            : navigateur Playwright (chromium | firefox | webkit)
+#   VIEWPORT           : résolution cible (mobile | tablet | desktop)
+#   ENV                : profil de configuration pytest (docker)
+#   PARALLEL_PROCESSES : workers xdist (auto = nb de CPU)
+#   PYTEST_MARKERS     : filtre pytest -m (smoke | regression | ...)
+#                        Si vide → tous les tests sont exécutés
+#   RERUN_NB           : nombre de relances sur échec (flaky tests)
+#   RERUN_DELAY        : délai en secondes entre relances
+#   REPORT_DIR         : dossier de sortie des rapports HTML + Allure
+#
+# Tous les services de tests partagent la même image digitalbank-tests
+# construite depuis ./digitalbank-automation/Dockerfile.
+# Les rapports sont montés dans ./digitalbank-automation/reports/.
+# ─────────────────────────────────────────────────────────────────────
 
 services:
   # ═══════════════════════════════════════════════════════════════

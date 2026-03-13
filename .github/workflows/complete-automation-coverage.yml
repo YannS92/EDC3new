@@ -1,5 +1,29 @@
 name: DigitalBank - Tests Automatises
 
+# ═══════════════════════════════════════════════════════════════════════
+# Stratégie de dispatch par événement
+# ───────────────────────────────────────────────────────────────────────
+# Chaque job porte son propre filtre via `if: github.event_name == ...`
+# ce qui élimine le besoin d'un job dispatcher séparé.
+#
+# ┌─────────────────┬──────────────────────────────────────────────────┐
+# │ Événement       │ Jobs déclenchés                                  │
+# ├─────────────────┼──────────────────────────────────────────────────┤
+# │ push            │ tests-smoke (1 service aléatoire parmi les 3     │
+# │ pull_request    │ configs principales, marqueur smoke)             │
+# ├─────────────────┼──────────────────────────────────────────────────┤
+# │ schedule        │ tests-regression (1 service aléatoire parmi les  │
+# │ (quotidien)     │ 3 configs principales, marqueur regression)      │
+# ├─────────────────┼──────────────────────────────────────────────────┤
+# │ workflow_dispatch│ build → tests-production (matrix 9 services)   │
+# │ (manuel)        │ → cleanup                                        │
+# └─────────────────┴──────────────────────────────────────────────────┘
+#
+# CONTAINER_MAIN_SERVICES : pool des 3 services "représentatifs" utilisés
+# pour smoke et regression (un par navigateur principal).
+# tests-production couvre les 9 combinaisons browser × viewport.
+# ═══════════════════════════════════════════════════════════════════════
+
 on:
   push:
     branches: [ main, develop ]

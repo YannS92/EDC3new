@@ -1,5 +1,12 @@
 """
 Page Object pour la page de connexion DigitalBank
+
+Couvre trois états de la page de connexion :
+- Formulaire email/password principal
+- Page de saisie du code 2FA (après connexion d'un compte avec 2FA activée)
+- Page de réinitialisation de mot de passe (via le lien 'Mot de passe oublié')
+
+Tous les sélecteurs utilisent l'attribut data-testid pour la stabilité.
 """
 
 from tests.utils.base_page import BasePage
@@ -65,6 +72,14 @@ class LoginPage(BasePage):
         self.click(self.FORGOT_PASSWORD_LINK)
 
     def get_error_message(self):
+        """
+        Retourne le message d'erreur de connexion s'il est visible.
+
+        Ignore l'élément s'il est présent dans le DOM mais masqué via la classe CSS 'hidden'.
+
+        Returns:
+            Texte du message d'erreur, ou None si aucun message visible
+        """
         if self.is_element_visible(self.ERROR_MESSAGE, timeout=3):
             locator = self.find_element(self.ERROR_MESSAGE)
             if 'hidden' not in (locator.get_attribute('class') or ''):
@@ -72,6 +87,7 @@ class LoginPage(BasePage):
         return None
 
     def is_login_page_displayed(self):
+        """Retourne True si le champ email est visible (page de connexion affichée)."""
         return self.is_element_visible(self.EMAIL_FIELD)
 
     # --- Méthodes 2FA ---
@@ -97,9 +113,16 @@ class LoginPage(BasePage):
         self.submit_2fa_code()
 
     def is_2fa_page_displayed(self):
+        """Retourne True si le premier champ du code 2FA est visible."""
         return self.is_element_visible(self.TWO_FA_CODE_0, timeout=5)
 
     def get_2fa_error_message(self):
+        """
+        Retourne le message d'erreur 2FA s'il est visible.
+
+        Returns:
+            Texte du message d'erreur 2FA, ou None si aucun message visible
+        """
         if self.is_element_visible(self.TWO_FA_ERROR, timeout=3):
             locator = self.find_element(self.TWO_FA_ERROR)
             if 'hidden' not in (locator.get_attribute('class') or ''):
@@ -122,9 +145,16 @@ class LoginPage(BasePage):
         self.submit_reset_password()
 
     def is_reset_page_displayed(self):
+        """Retourne True si le champ email de réinitialisation est visible."""
         return self.is_element_visible(self.RESET_EMAIL_FIELD, timeout=5)
 
     def get_reset_success_message(self):
+        """
+        Retourne le message de succès de réinitialisation s'il est visible.
+
+        Returns:
+            Texte du message de succès, ou None si aucun message visible
+        """
         if self.is_element_visible(self.RESET_SUCCESS, timeout=3):
             locator = self.find_element(self.RESET_SUCCESS)
             if 'hidden' not in (locator.get_attribute('class') or ''):
@@ -132,6 +162,12 @@ class LoginPage(BasePage):
         return None
 
     def get_reset_error_message(self):
+        """
+        Retourne le message d'erreur de réinitialisation s'il est visible.
+
+        Returns:
+            Texte du message d'erreur, ou None si aucun message visible
+        """
         if self.is_element_visible(self.RESET_ERROR, timeout=3):
             locator = self.find_element(self.RESET_ERROR)
             if 'hidden' not in (locator.get_attribute('class') or ''):

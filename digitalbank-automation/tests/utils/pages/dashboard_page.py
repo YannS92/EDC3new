@@ -1,5 +1,13 @@
 """
 Page Object pour le Dashboard (Mes Comptes) DigitalBank
+
+Couvre :
+- Navigation entre les onglets (Dashboard, Virements, Factures, Sécurité)
+- Lecture des cartes de solde et du solde total
+- Lecture de la liste des transactions récentes
+- Déconnexion
+
+Tous les sélecteurs utilisent l'attribut data-testid pour la stabilité.
 """
 
 from tests.utils.base_page import BasePage
@@ -33,6 +41,7 @@ class DashboardPage(BasePage):
         super().__init__(page)
 
     def is_dashboard_displayed(self):
+        """Retourne True si les cartes de solde sont visibles (dashboard affiché)."""
         return self.is_element_visible(self.BALANCE_CARDS, timeout=5)
 
     @allure.step("Récupération du nom d'utilisateur")
@@ -100,4 +109,5 @@ class DashboardPage(BasePage):
         return transactions
 
     def has_transactions(self):
+        """Retourne True si la liste de transactions contient au moins un élément."""
         return not self.is_element_visible(".empty-state", timeout=2)
