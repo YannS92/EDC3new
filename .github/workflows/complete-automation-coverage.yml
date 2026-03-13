@@ -32,6 +32,15 @@ jobs:
       - name: Build Docker images
         run: docker compose build --parallel
 
+      - name: Export image
+        run: docker save digitalbank-tests > digitalbank-tests.tar
+
+      - name: Upload image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: digitalbank-tests.tar
+
   # ═══════════════════════════════════════════════════════════════
   # Smoke tests — push / pull request
   # ═══════════════════════════════════════════════════════════════
@@ -42,8 +51,13 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load image
+        run: docker load < digitalbank-tests.tar
 
       - name: Select random main config
         id: random
@@ -52,6 +66,9 @@ jobs:
           RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
           echo "service=$RANDOM_SERVICE" >> $GITHUB_OUTPUT
           echo "Selected service: $RANDOM_SERVICE"
+
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
       - name: Run Smoke Tests
         run: docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
@@ -78,8 +95,13 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load image
+        run: docker load < digitalbank-tests.tar
 
       - name: Select random main config
         id: random
@@ -88,6 +110,9 @@ jobs:
           RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
           echo "service=$RANDOM_SERVICE" >> $GITHUB_OUTPUT
           echo "Selected service: $RANDOM_SERVICE"
+
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
       - name: Run Regression Tests
         run: docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
@@ -128,6 +153,14 @@ jobs:
           - tests-firefox-tablet
 
     steps:
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load image
+        run: docker load < digitalbank-tests.tar
+
       - name: Checkout du code
         uses: actions/checkout@v4
 
