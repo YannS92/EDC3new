@@ -26,8 +26,12 @@ jobs:
       - name: Build images Docker
         run: docker compose build --parallel
 
-      - name: Run Chromium Mobile
-        run: docker compose run -e PYTEST_MARKERS="smoke" tests-chromium-mobile
+      - name: Run Tests on Random Main Config
+        run: |
+          SERVICES=("tests-chromium-mobile" "tests-webkit-tablet" "tests-firefox-desktop")
+          RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
+          echo "Selected service: $RANDOM_SERVICE"
+          docker compose run -e PYTEST_MARKERS="smoke" $RANDOM_SERVICE
 
       - name: Check exit codes
         if: always()
@@ -56,10 +60,58 @@ jobs:
         run: docker compose down -v
 
   # ═══════════════════════════════════════════════════════════════
-  # Complete tests — journalier / manuel
+  # Regression Tests — Daily
   # ═══════════════════════════════════════════════════════════════
-  tests-complete:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  tests-regression:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Build images Docker
+        run: docker compose build --parallel
+
+      - name: Run Tests on Random Main Config
+        run: |
+          SERVICES=("tests-chromium-mobile" "tests-webkit-tablet" "tests-firefox-desktop")
+          RANDOM_SERVICE=${SERVICES[$RANDOM % ${#SERVICES[@]}]}
+          echo "Selected service: $RANDOM_SERVICE"
+          docker compose run -e PYTEST_MARKERS="regression" $RANDOM_SERVICE
+
+      - name: Check exit codes
+        if: always()
+        run: |
+          FAIL=0
+          for CID in $(docker compose ps -aq); do
+            EXIT_CODE=$(docker inspect $CID --format='{{.State.ExitCode}}')
+            NAME=$(docker inspect $CID --format='{{.Name}}')
+            echo "$NAME -> $EXIT_CODE"
+            if [ "$EXIT_CODE" != "0" ]; then
+              FAIL=1
+            fi
+          done
+          exit $FAIL
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-tests-smoke
+          path: digitalbank-automation/reports
+          retention-days: 30
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+
+  # ═══════════════════════════════════════════════════════════════
+  # Complete Tests for Production-Ready Application — Manual
+  # ═══════════════════════════════════════════════════════════════
+  tests-production:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

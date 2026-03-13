@@ -282,14 +282,14 @@ digitalbank-automation/
 │   │   ├── data_manager.py          # Gestionnaire centralisé
 │   │   ├── seed_data.py             # Scripts seed/cleanup/reset + CLI
 │   │   └── db/                      # Bases SQLite par environnement
-│   └── utils/                  # Page Object Model
+│   └── utils/                  # Page-Object Model
 │       ├── base_page.py             # BasePage Playwright (waits, click, accessibilite)
 │       └── pages/
 │           ├── login_page.py        # Page connexion + 2FA + reset
 │           ├── dashboard_page.py    # Page tableau de bord
 │           ├── security_page.py     # Page paramètres sécurité
-│           ├── transfer_page.py     # Page virements (Page Object prêt, tests Sprint 4)
-│           └── bills_page.py        # Page factures (Page Object prêt, tests Sprint 5)
+│           ├── transfer_page.py     # Page virements (Page-Object prêt, tests Sprint 4)
+│           └── bills_page.py        # Page factures (Page-Object prêt, tests Sprint 5)
 ├── reports/                    # Rapports générés
 │   ├── report-{browser}-{viewport}.html  # Rapport pytest-html par config
 │   └── allure-results/              # Données brutes Allure
@@ -325,11 +325,11 @@ Les sélecteurs utilisent des attributs dédiés (`data-testid`) afin de garanti
 
 | Sprint   | Semaines | Livrables                                                       | Statut      |
 | -------- | -------- | --------------------------------------------------------------- | ----------- |
-| Sprint 1 | S1-S2    | Framework de base, Page Objects, tests authentification         | Terminé     |
+| Sprint 1 | S1-S2    | Framework de base, Page-Objects, tests authentification         | Terminé     |
 | Sprint 2 | S3-S4    | Tests sécurité, BDD (Gherkin), gestion données                  | Terminé     |
 | Sprint 3 | S5-S6    | Migration Playwright, Docker 9 conteneurs, CI/CD GitHub Actions | Terminé     |
-| Sprint 4 | S7-S8    | Tests virements bancaires (Page Object pret)                    | Á planifier |
-| Sprint 5 | S9-S10   | Tests paiement factures (Page Object pret)                      | Á planifier |
+| Sprint 4 | S7-S8    | Tests virements bancaires (Page-Object prêt)                    | Á planifier |
+| Sprint 5 | S9-S10   | Tests paiement factures (Page-Object prêt)                      | Á planifier |
 | Sprint 6 | S11-S12  | Tests performance, optimisation CI/CD                           | Á planifier |
 
 ### 6.2 Couverture Actuelle par Module
@@ -338,18 +338,18 @@ Les sélecteurs utilisent des attributs dédiés (`data-testid`) afin de garanti
 | ------------------------------------------------------ | ------------------ | ----------- | ------------- | ---------------- |
 | Authentification (login, 2FA, logout, reset)           | 12 tests           | 8 scénarios | P1 - Critique | Implementé       |
 | Paramètres Securité (mot de passe, 2FA, notifications) | 11 tests           | 6 scénarios | P2 - Haute    | Implementé       |
-| Consultation Compte (solde, historique)                | -                  | -           | P1 - Critique | Page Object prêt |
-| Virements Bancaires (internes, externes)               | -                  | -           | P1 - Critique | Page Object prêt |
-| Paiement Factures                                      | -                  | -           | P2 - Haute    | Page Object prêt |
+| Consultation Compte (solde, historique)                | -                  | -           | P1 - Critique | Page-Object prêt |
+| Virements Bancaires (internes, externes)               | -                  | -           | P1 - Critique | Page-Object prêt |
+| Paiement Factures                                      | -                  | -           | P2 - Haute    | Page-Object prêt |
 
-**Note** : Les Page Objects `transfer_page.py`, `bills_page.py` et `dashboard_page.py` sont déjà développés et prêts a recevoir des tests, permettant une montée en charge rapide lors des prochains sprints.
+**Note** : Les Page-Objects `transfer_page.py`, `bills_page.py` et `dashboard_page.py` sont déjà développés et prêts a recevoir des tests, permettant une montée en charge rapide lors des prochains sprints.
 
 ### 6.3 Repartition des Tests par Marker
 
 | Marker                     | Nombre de tests | Usage                                                  |
 | -------------------------- | --------------- | ------------------------------------------------------ |
 | `@smoke`                   | ~11             | Vérification rapide, exécution à chaque push           |
-| `@regression`              | ~30             | Suite complète, exécution quotidienne                  |
+| `@regression`              | ~30             | Exécution quotidienne                                  |
 | `@critical`                | ~8              | Tests bloquants pour la mise en production             |
 | `@accessibility` / `@wcag` | 2               | Conformité WCAG 2.1                                    |
 | `@xfail`                   | 1               | Bug connu documenté (labels manquants sur les toggles) |
@@ -465,7 +465,11 @@ docker-compose run -e PYTEST_MARKERS="smoke" tests-firefox-mobile
 docker-compose down
 ```
 
-Services disponibles : `tests-chromium-mobile`, `tests-chromium-tablet`, `tests-chromium-desktop`, `tests-webkit-mobile`, `tests-webkit-tablet`, `tests-webkit-desktop`, `tests-firefox-mobile`, `tests-firefox-tablet`, `tests-firefox-desktop`
+Services disponibles :
+
+- `tests-chromium-mobile`, `tests-chromium-tablet`, `tests-chromium-desktop`
+- `tests-webkit-mobile`, `tests-webkit-tablet`, `tests-webkit-desktop`
+- `tests-firefox-mobile`, `tests-firefox-tablet`, `tests-firefox-desktop`
 
 ### 8.4 Rapports et Visibilité
 
@@ -664,7 +668,7 @@ Les resultats sont visibles via :
 - **WCAG** : Web Content Accessibility Guidelines
 - **RGPD** : Reglement General sur la Protection des Donnees
 - **2FA** : Two-Factor Authentication
-- **POM** : Page Object Model
+- **POM** : Page-Object Model
 - **BDD** : Behavior-Driven Development
 - **ROI** : Return On Investment
 - **SPA** : Single Page Application
