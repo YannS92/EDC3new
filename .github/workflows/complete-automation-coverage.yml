@@ -71,7 +71,7 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Run Smoke Tests
+      - name: Run Smoke Tests on ${{ steps.random.outputs.service }}
         run: docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
 
       - name: Upload Reports
@@ -115,7 +115,7 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Run Regression Tests
+      - name: Run Regression Tests on ${{ steps.random.outputs.service }}
         run: docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
 
       - name: Upload Reports
@@ -165,7 +165,7 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Run ${{ matrix.service }}
+      - name: Run Tests on ${{ matrix.service }}
         run: docker compose run ${{ matrix.service }}
 
       - name: Upload Reports
@@ -183,10 +183,9 @@ jobs:
   # ═════════════════════════════════════════════════════════════════
   # Cleanup — dernière étape du workflow pour supprimer l’artefact Docker
   # Explication : 
-  # Le rebuild dans chaque job est plus rapide, on l'extrait pour la scalabilité dans le futur.
-  # On prévoit plus de jobs, dont certains jobs qui peuvent s’exécuter en parallèle.
-  # On va donc gagner en performance et maintenabilité au long terme.
-  # Le cleanup final s’exécute toujours après l'éxecution d'au moins un des autres jobs pour libérer de l’espace.
+  # Le rebuild dans chaque job est plus rapide, on l'extrait pour la scalabilité.
+  # On prévoit plus de jobs dont certains qui vont s’exécuter en parallèle
+  # (tests-accessibility/tests-performance/tests-critical/...).
   # ═════════════════════════════════════════════════════════════════
   cleanup:
     runs-on: ubuntu-latest
