@@ -210,12 +210,12 @@ La fréquence d'éxecution sera complètement implémenté dans le futur lorsque
 
 Il a donc été décidé de déployer l'application localement pour les tests, d'où l'environnement docker et local. Cette solution est temporaire, les cas de tests automatisés devraient normalement être exécutés sur l'environnement d'intégration et pas en local.
 
-Fichier : `config/environments.yaml`
+On a dans le fichier `config/environments.yaml` :
 
 ```yaml
 environments:
   docker:
-    base_url: "http://webapp/" # Conteneur nginx du docker compose
+    base_url: "http://webapp/" # Service délivrant l'application dans le docker compose
     timeout: 60
 
   dev:
@@ -234,9 +234,6 @@ environments:
     base_url: "https://preprod.digitalbank.com"
     timeout: 60
 ```
-
-Chaque environnement dispose de sa propre base SQLite (`test_data_{env}.db`) pour l'isolation des données.
-Paramètre flexible via `--env` : `pytest tests/ --env=uat`
 
 ---
 
@@ -515,7 +512,7 @@ Services disponibles :
 
 ### 9.2 Modèles de Données (ORM)
 
-5 modeles SQLAlchemy avec relations :
+5 modèles SQLAlchemy avec relations :
 
 - `User` (email, password, name, has_2fa, totp_code)
 - `Account` (user_id, type, number/IBAN, balance)
@@ -527,23 +524,23 @@ Services disponibles :
 
 ```bash
 # CLI disponible via seed_data.py
-python -m tests.data.seed_data seed --env=dev -v       # Initialiser les donnees
-python -m tests.data.seed_data cleanup --env=dev -v     # Nettoyer les donnees
-python -m tests.data.seed_data reset --env=dev -v       # Reinitialiser (cleanup + seed)
-python -m tests.data.seed_data random --env=dev -c 20 -v  # Generer 20 jeux aleatoires
+python -m tests.data.seed_data seed --env=dev -v       # Initialiser les données
+python -m tests.data.seed_data cleanup --env=dev -v     # Nettoyer les données
+python -m tests.data.seed_data reset --env=dev -v       # Réinitialiser (cleanup + seed)
+python -m tests.data.seed_data random --env=dev -c 20 -v  # Générer 20 jeux aléatoires
 ```
 
-Hooks pytest integres dans `conftest.py` :
+Hooks pytest intégrés dans `conftest.py` :
 
-- Fixtures de setup : preparation des donnees avant exécution
+- Fixtures de setup : préparation des données avant exécution
 - `pytest_sessionfinish` : fermeture des connexions en fin de session
 
 ### 9.4 Isolation Multi-Environnement
 
 - Singleton `DatabaseManager` par environnement
-- Base SQLite separee : `tests/data/db/test_data_{env}.db`
-- Parametrable via `--env` : `pytest tests/ --env=uat`
-- Variables d'environnement supportees (`${DB_USER}`, `${DB_PASSWORD}`)
+- Base SQLite séparée : `tests/data/db/test_data_{env}.db`
+- Paramétrable via `--env` : `pytest tests/ --env=uat`
+- Variables d'environnement supportées (`${DB_USER}`, `${DB_PASSWORD}`)
 
 ---
 
@@ -551,23 +548,23 @@ Hooks pytest integres dans `conftest.py` :
 
 ### 10.1 Outil de Versioning
 
-Le code source est versionne avec **Git** et heberge sur **GitHub** :
+Le code source est versionné avec **Git** et hebergé sur **GitHub** avec l'architecture suivante :
 
-- Branche `main` : code stable, protegee (merge via PR uniquement)
-- Branche `develop` : integration continue
+- Branche `main` : code stable, protegé (merge via PR uniquement)
+- Branche `develop` : intégration continue
 - Branches sprint : `sprint-1`, `sprint-2`, `sprint-3` (une branche par sprint)
 
 ### 10.2 Versions et Releases
 
-Les tags Git sont crees a la fin de chaque sprint et associes aux releases projet :
+Les tags Git sont créés à la fin de chaque sprint et associés aux releases projet :
 
 | Tag    | Sprint              | Contenu                                            |
 | ------ | ------------------- | -------------------------------------------------- |
 | `v1.0` | Sprint 1            | Framework de base + tests authentification         |
-| `v2.0` | Sprint 2            | Tests securite + BDD + gestion donnees             |
+| `v2.0` | Sprint 2            | Tests sécurité + BDD + gestion données             |
 | `v3.0` | Sprint 3            | Migration Playwright + Docker 9 conteneurs + CI/CD |
-| `v4.0` | Sprint 4 (planifie) | Tests virements                                    |
-| `v5.0` | Sprint 5 (planifie) | Tests factures                                     |
+| `v4.0` | Sprint 4 (planifié) | Tests virements                                    |
+| `v5.0` | Sprint 5 (planifié) | Tests factures                                     |
 
 ```bash
 # Creer un tag de release
@@ -575,20 +572,26 @@ git tag -a v3.0 -m "Sprint 3 : Migration Playwright, Docker 9 conteneurs, CI/CD"
 git push origin v3.0
 ```
 
-### 10.3 Processus de Retour Arriere
+### 10.3 Processus de Retour Arrière
 
-En cas de version defaillante, le processus de rollback est le suivant :
+En cas de version défaillante, le processus de rollback est le suivant :
 
-1. **Identification** : les tests CI/CD echouent sur `main` → alerte automatique GitHub
-2. **Isolation** : identifier le commit/tag de derniere version stable
-3. **Retour arriere** :
+1. **Identification** : les tests CI/CD échouent sur `main` → alerte automatique GitHub
+
+2. **Isolation** : identifier le commit/tag de dernière version stable
+
+3. **Retour arrière** :
+
+   **Option 1** : revert du commit defaillant (préserve l'historique)
 
    ```bash
-   # Option 1 : revert du commit defaillant (preserve l'historique)
    git revert <commit-hash>
    git push origin main
+   ```
 
-   # Option 2 : retour au tag stable (pour une regression multi-commits)
+   **Option 2** : retour au tag stable (pour une régression multi-commits)
+
+   ```bash
    git checkout v2.0
    git checkout -b hotfix/rollback-v2
    git push origin hotfix/rollback-v2
@@ -596,42 +599,44 @@ En cas de version defaillante, le processus de rollback est le suivant :
    ```
 
 4. **Validation** : les tests smoke doivent repasser avant remise en production
-5. **Docker** : chaque image est taggee (`v3.0`) → relancer l'image stable si necessaire
+
+5. **Docker** : chaque image est taggée (ex : `v3.0`) → relancer l'image stable si nécessaire
 
 ---
 
-## 11. Conformite et Normes
+## 11. Conformité et Normes
 
 ### 11.1 RGPD
 
-- Aucune donnee personnelle reelle dans les tests
-- Donnees synthetiques generees par Faker (locale `fr_FR`)
-- Base SQLite locale, pas de transmission de donnees
+- Aucune donnée personnelle réelle dans les tests
+- Données synthétiques générées par Faker (locale `fr_FR`)
+- Base SQLite locale, pas de transmission de données
 - Logs de test sans informations sensibles
 
-### 11.2 WCAG 2.1 (Accessibilite)
+### 11.2 WCAG 2.1 (Accessibilité)
 
-- Tests automatises via axe-core sur chaque page testee
-- Verification des niveaux A et AA
-- Bug connu documente : labels manquants sur les toggles (`@xfail`)
-- Violations reportees en JSON dans les rapports Allure
+- Tests automatisés via axe-core sur chaque page testée
+- Vérification des niveaux A et AA
+- Bug connu documenté : labels manquants sur les toggles (`@xfail`)
+- Violations reportées en JSON dans les rapports Allure
 
-### 11.3 Eco-Conception
+### 11.3 Éco-Conception
 
 **Dans les scripts de test :**
 
-- Mode headless par defaut (pas de rendu graphique = moins de CPU/RAM)
-- Screenshots uniquement en cas d'echec (pas systematique)
-- `wait_until="domcontentloaded"` : navigation plus rapide, moins de requetes inutiles attendues
-- Selecteurs `data-testid` stables : moins de reruns dus a des locators fragiles
+- Mode headless par défaut (pas de rendu graphique = moins de CPU/RAM)
+- Screenshots uniquement en cas d'échec (processus lourd et coûteux en stockage)
+- `wait_until="domcontentloaded"` : navigation plus rapide, moins de requêtes inutiles attendues, pas de problèmes de stabilité qui nécessiterait ce guard-rail.
+- Sélecteurs `data-testid` stables : moins de reruns dus a des sélecteurs
 
 **Dans l'infrastructure :**
 
-- Exécution parallelisee (`-n auto`) : reduit le temps machine total
-- 9 conteneurs en parallèle : meme couverture en moins de temps qu'une exécution sequentielle
-- Rapports `--self-contained-html` : un seul fichier, pas d'assets supplementaires
-- Nettoyage des donnees en post-exécution via `pytest_sessionfinish`
-- Arret automatique des conteneurs après exécution (`docker-compose up` + exit code)
+- Exécution parallelisée (`-n auto`) : réduit le temps machine total
+- 9 conteneurs en parallèle : même couverture en moins de temps qu'une exécution séquentielle
+- Rapports `--self-contained-html` : un seul fichier, pas d'assets supplémentaires
+- Nettoyage des données en post-exécution via `pytest_sessionfinish`
+- Arrêt automatique des conteneurs après exécution (dans le github workflow)
+- Optimisation de la consommation des ressources avec distribution des cas de tests dans les différentes configurations (`docker-compose.yml`).
 
 ---
 
@@ -639,24 +644,24 @@ En cas de version defaillante, le processus de rollback est le suivant :
 
 ### 12.1 KPIs Automatisation
 
-| Indicateur                                     | Cible         | Actuel                                             |
-| ---------------------------------------------- | ------------- | -------------------------------------------------- |
-| Couverture automatisee (modules critiques)     | > 70%         | ~40% (2/5 modules implementes)                     |
-| Taux de reussite                               | > 95%         | ~97% (40 passed, 1 xpassed, 1 error intermittente) |
-| Temps d'exécution suite complète (1 conteneur) | < 10 minutes  | ~6 minutes                                         |
-| Faux positifs (reruns reussis)                 | < 5%          | < 5%                                               |
-| Couverture navigateurs                         | 3 navigateurs | Chromium + Firefox + WebKit                        |
-| Couverture viewports                           | 3 viewports   | Mobile + Tablet + Desktop                          |
+| Indicateur                                     | Cible         | Actuel                         |
+| ---------------------------------------------- | ------------- | ------------------------------ |
+| Couverture automatisée (modules critiques)     | > 70%         | ~40% (2/5 modules implémentés) |
+| Taux de reussite                               | > 95%         | ~100% (41 passed, 1 xpassed)   |
+| Temps d'exécution suite complète (1 conteneur) | < 10 minutes  | ~3 minutes                     |
+| Faux positifs (reruns réussis)                 | < 5%          | 0, pas d'instabilité constatée |
+| Couverture navigateurs                         | 3 navigateurs | Chromium + Firefox + WebKit    |
+| Couverture viewports                           | 3 viewports   | Mobile + Tablet + Desktop      |
 
 ### 12.2 Dashboard de Suivi
 
-Les resultats sont visibles via :
+Les résultats sont visibles via :
 
-- **GitHub Actions** : Statut pass/fail a chaque push/PR (badge de statut)
-- **Commentaire automatique sur PR** : tableau de synthese des 9 configurations
-- **pytest-html** : Rapport HTML detaille par configuration (`reports/report-{browser}-{viewport}.html`)
-- **GitHub Artifacts** : Rapports telechargeable pendant 30 jours
-- **Allure** : Donnees brutes pour generation de dashboards enrichis
+- **GitHub Actions** : Statut pass/fail à chaque push/PR (badge de statut)
+- **Commentaire automatique sur PR** : tableau de synthèse des 9 configurations
+- **pytest-html** : Rapport HTML détaillé par configuration (`reports/report-{browser}-{viewport}.html`)
+- **GitHub Artifacts** : Rapports téléchargeable pendant 30 jours
+- **Allure** : Données brutes pour génération de dashboards enrichis
 
 ---
 
