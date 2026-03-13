@@ -73,7 +73,7 @@ jobs:
           set -o pipefail
           docker compose run -e PYTEST_MARKERS="smoke" ${{ steps.random.outputs.service }}
           echo "exit_code=$?" >> $GITHUB_OUTPUT
-          ECHO "EXIT CODE $?"
+          echo "EXIT CODE $?"
 
       - name: Upload Reports
         if: always()
@@ -127,7 +127,7 @@ jobs:
           set -o pipefail
           docker compose run -e PYTEST_MARKERS="regression" ${{ steps.random.outputs.service }}
           echo "exit_code=$?" >> $GITHUB_OUTPUT
-          ECHO "EXIT CODE $?"
+          echo "EXIT CODE $?"
 
       - name: Upload Reports
         if: always()
@@ -193,7 +193,7 @@ jobs:
           set -o pipefail
           docker compose run ${{ matrix.service }}
           echo "exit_code=$?" >> $GITHUB_OUTPUT
-          ECHO "EXIT CODE $?"
+          echo "EXIT CODE $?"
 
       - name: Upload Reports
         if: always()
